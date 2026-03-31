@@ -1,0 +1,66 @@
+uses io.compute.apps.RNG
+component provides App requires io.Output out, time.TimeUnix time, util.Random random, time.Calendar calendar, data.IntUtil dataint, Cache operation
+{
+    static int MAX_SIZE = 10
+    static int cache[] = new int [MAX_SIZE]
+    static int current_size = 10
+
+    // STRATEGY AGNOSTIC FUNCTIONS
+    int[] getKeys() // returns all currently stored keys
+    {
+        int keys[] = new int [current_size]
+        for (int i = 0; i < current_size; i++)
+        {
+            keys[i] = cache[i]
+        }
+        return keys
+    }
+    void fill_cache() // testing: all items turn to 1
+    {
+        for (int i = 0; i < MAX_SIZE; i++)
+            cache[i] = 1
+    }
+    void clear_cache() // all items turn to MAX_SIZE
+    {
+        for (int i = 0; i < MAX_SIZE; i++)
+            cache[i] = MAX_SIZE
+    }
+    void print_array(int array[], int size)
+    {
+        for (int i = 0; i < size; i++)
+            out.println(dataint.makeString(array[i]))
+    }
+
+    int generate_req()
+    {
+        return random.getInt(MAX_SIZE)
+    }
+
+    int App:main(AppParam params[])
+    {
+        random.setSeed(calendar.getMS())
+        char toPrint[]
+        clear_cache()
+        fill_cache()
+        cache[2] = 300
+        out.println("--- INITIAL STATE ---")
+        out.println("ARRAY CONTENTS")
+        print_array(cache, MAX_SIZE)
+        out.println("GET TEST: look for 1")
+        out.println(dataint.makeString(operation.get(cache, 1)))
+        out.println("GETKEYS TEST:")
+        int printarray[] = getKeys()
+        print_array(cache, MAX_SIZE)
+
+        cache = operation.delete(cache, current_size, 300)
+        cache = operation.update(cache, current_size, 400)
+        out.println("--- FINAL STATE (after deleting key 300) ---")
+        for (int i = 0; i < current_size; i++)
+            out.println(dataint.makeString(cache[i]))
+
+
+       // cache.delete()
+
+        return 0
+    }
+}
