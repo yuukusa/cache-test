@@ -1,6 +1,0 @@
-interface Cache
-{
-    int get(int cache[], int key)
-    int[] update(int cache[], int current_size, int key)
-    int[] delete(int cache[], int current_size, int key)
-}
