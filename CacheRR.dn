@@ -1,9 +1,10 @@
-component provides Cache requires io.Output out, data.IntUtil iu {
+component provides Cache requires io.Output out, data.IntUtil iu, util.Random random, time.Calendar calendar {
     void initCache() {
         cache = new CacheItem[Cache.MAX_SIZE]
         index = 0
         hits = 0
         misses = 0
+        random.setSeed(calendar.getMS())
     }
 
     int Cache:get(int key) {

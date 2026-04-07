@@ -4,6 +4,9 @@ component provides Cache requires io.Output out, data.IntUtil iu {
         index = 0
         hits = 0
         misses = 0
+        //lru_order = new int [Cache.MAX_SIZE]
+        last_accessed = new int [Cache.MAX_SIZE]
+        access_counter = 0
     }
 
     int Cache:get(int key) {
@@ -12,6 +15,8 @@ component provides Cache requires io.Output out, data.IntUtil iu {
             if (cache[i] != null) {
                 if (cache[i].key == key) {
                     hits++
+                    access_counter++ // update timestamp
+                    last_accessed[i] = access_counter
                     return cache[i].value
                 }
             } else { break }
@@ -40,17 +45,39 @@ component provides Cache requires io.Output out, data.IntUtil iu {
     void Cache:add(store CacheItem item) {
         if (cache == null) { initCache() }
         int flag = 0
-
+        // key already exists: update
         for (int i = 0; i < Cache.MAX_SIZE; i++) {
             if (cache[i] != null && cache[i].key == item.key) {
                 cache[i] = item
-                flag = 1
+                access_counter++
+                last_accessed[i] = access_counter
+                flag = 1 // signal key already exists
+                break
             }
         }
+        // key does not exist: find empty slot
         if (flag == 0) {
-            if (index >= Cache.MAX_SIZE) { index = 0 }
-            cache[index] = item
-            index++
+            for (int i = 0; i < Cache.MAX_SIZE; i++) {
+                if (cache[i] == null) {
+                    cache[i] = item
+                    access_counter++
+                    last_accessed[i] = access_counter
+                    flag = 1 // signal empty slot found
+                    break
+                }
+            }
+        }
+        // no key and no empty slot: find LRU
+        if (flag == 0) {
+            int lru_index = 0
+            for (int i = 0; i < Cache.MAX_SIZE; i++) {
+                if (last_accessed[i] < last_accessed[lru_index]) {
+                    lru_index = i
+                }
+            }
+            cache[lru_index] = item
+            access_counter++
+            last_accessed[lru_index] = access_counter
         }
     }
 
@@ -63,6 +90,13 @@ component provides Cache requires io.Output out, data.IntUtil iu {
         }
         out.print("]\n")
         out.println("Hits: $(iu.intToString(hits)) - Misses: $(iu.intToString(misses))")
+
+        out.print("[")
+        for (int i = 0; i < Cache.MAX_SIZE; i++) {
+            if (last_accessed[i] == null) { break }
+            out.print("$(iu.intToString(last_accessed[i]))  ")
+        }
+        out.print("]\n")
     }
 
     int Cache:getHits() {

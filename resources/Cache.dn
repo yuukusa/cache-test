@@ -1,6 +1,22 @@
-interface Cache
-{
-    int get(int cache[], int key)
-    int[] update(int cache[], int current_size, int key)
-    int[] delete(int cache[], int current_size, int key)
+data CacheItem {
+    int key
+    int value
+}
+
+interface Cache {
+    const int MAX_SIZE = 10
+    transfer CacheItem cache[]
+    transfer int index // points to where to include the next item
+    transfer int hits
+    transfer int misses
+    transfer int lru_order[] // store indices in access order
+    transfer int last_accessed[] // last access timestamp
+    transfer int access_counter // increments at each get/add
+
+    int get(int key)
+    bool update(store CacheItem item)
+    void add(store CacheItem item)
+    void printCache()
+    int getHits()
+    int getMisses()
 }
