@@ -1,4 +1,5 @@
 component provides Cache requires io.Output out, data.IntUtil iu, util.Random random, time.Calendar calendar {
+    const char mode[] = "Random Replacement"
     void initCache() {
         cache = new CacheItem[Cache.MAX_SIZE]
         index = 0
@@ -20,24 +21,7 @@ component provides Cache requires io.Output out, data.IntUtil iu, util.Random ra
         misses++
         return INT_MAX
     }
-
-    bool Cache:update(store CacheItem item) {
-        if (cache == null) { 
-            initCache()
-            return false
-        }
-        for (int i = 0; i < Cache.MAX_SIZE; i++) {
-            if (cache[i] != null) {
-                if (cache[i].key == item.key) {
-                    cache[i] = item
-                    return true
-                }
-            } else { break }
-        }
-        return false
-    }
-
-    // replacement algorithm should be implemented here
+    
     void Cache:add(store CacheItem item) {
         if (cache == null) { initCache() }
         int flag = 0
@@ -46,17 +30,29 @@ component provides Cache requires io.Output out, data.IntUtil iu, util.Random ra
             if (cache[i] != null && cache[i].key == item.key) {
                 cache[i] = item
                 flag = 1
+                break
             }
         }
+
         if (flag == 0) {
-            if (index >= Cache.MAX_SIZE) { index = 0 }
-            cache[index] = item
-            index++
+            for (int i = 0; i < Cache.MAX_SIZE; i++) {
+                if (cache[i] == null) {
+                    cache[i] = item
+                    flag = 1 // signal empty slot found
+                    break
+                }
+            }
+        }
+
+        if (flag == 0) {
+            int random_index = random.getInt(Cache.MAX_SIZE - 1)
+            cache[random_index] = item
         }
     }
 
     void Cache:printCache() {
         if (cache == null) { initCache() }
+        out.println("$mode")
         out.print("[ ")
         for (int i = 0; i < Cache.MAX_SIZE; i++) {
             if (cache[i] == null) { break }
@@ -64,6 +60,7 @@ component provides Cache requires io.Output out, data.IntUtil iu, util.Random ra
         }
         out.print("]\n")
         out.println("Hits: $(iu.intToString(hits)) - Misses: $(iu.intToString(misses))")
+        out.println("---------------------------")
     }
 
     int Cache:getHits() {

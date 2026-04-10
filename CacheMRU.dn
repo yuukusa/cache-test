@@ -1,108 +1,130 @@
 component provides Cache requires io.Output out, data.IntUtil iu {
+    int mru_order[] = new int[Cache.MAX_SIZE]  // indices in access order
+    int order_size = 0  // current number of entries in MRU
+    const char mode[] = "Most Recently Used (MRU)"
+    
     void initCache() {
         cache = new CacheItem[Cache.MAX_SIZE]
         index = 0
         hits = 0
         misses = 0
-        //lru_order = new int [Cache.MAX_SIZE]
-        last_accessed = new int [Cache.MAX_SIZE]
-        access_counter = 0
+        order_size = 0
     }
-
+    
+    // Item was accessed -> move to most recently used position
+    void updateMRUOrder(int cache_index) {
+        int display_index = cache_index + 1 // start display index at 1
+        int pos = 0
+        int found = 0
+        for (int i = 0; i < order_size; i++) { // find where in mru_order where the item index is
+            if (mru_order[i] == display_index) {
+                pos = i
+                found = 1
+                break
+            }
+        }
+        for (int i = pos; i < order_size - 1; i++) { // shift left (erase found item) and
+            mru_order[i] = mru_order[i + 1]
+        }
+        mru_order[order_size - 1] = display_index // reintroduce at the end (MRU position)
+    }
+    
+    void addToMRUOrder(int cache_index) {
+        int display_index = cache_index + 1
+        mru_order[order_size] = display_index
+        order_size = order_size + 1
+    }
+    
     int Cache:get(int key) {
-        if (cache == null) { initCache() }
+        if (cache == null) { 
+            initCache() 
+        }
+        
         for (int i = 0; i < Cache.MAX_SIZE; i++) {
             if (cache[i] != null) {
                 if (cache[i].key == key) {
                     hits++
-                    access_counter++ // update timestamp
-                    last_accessed[i] = access_counter
+                    updateMRUOrder(i)
                     return cache[i].value
                 }
-            } else { break }
+            } else { 
+                break 
+            }
         }
+        
         misses++
         return INT_MAX
     }
-
-    bool Cache:update(store CacheItem item) {
-        if (cache == null) { 
-            initCache()
-            return false
-        }
-        for (int i = 0; i < Cache.MAX_SIZE; i++) {
-            if (cache[i] != null) {
-                if (cache[i].key == item.key) {
-                    cache[i] = item
-                    return true
-                }
-            } else { break }
-        }
-        return false
-    }
-
-    // replacement algorithm should be implemented here
+    
     void Cache:add(store CacheItem item) {
-        if (cache == null) { initCache() }
+        if (cache == null) { 
+            initCache() 
+        }
+        
         int flag = 0
-        // key already exists: update
+        
+        // if key already exists, then update
         for (int i = 0; i < Cache.MAX_SIZE; i++) {
             if (cache[i] != null && cache[i].key == item.key) {
                 cache[i] = item
-                access_counter++
-                last_accessed[i] = access_counter
-                flag = 1 // signal key already exists
+                updateMRUOrder(i)
+                flag = 1
                 break
             }
         }
-        // key does not exist: find empty slot
+        
+        // if key does not exist, find next empty spot
         if (flag == 0) {
             for (int i = 0; i < Cache.MAX_SIZE; i++) {
                 if (cache[i] == null) {
                     cache[i] = item
-                    access_counter++
-                    last_accessed[i] = access_counter
-                    flag = 1 // signal empty slot found
+                    addToMRUOrder(i)
+                    flag = 1
                     break
                 }
             }
         }
-        // no key and no empty slot: find MRU
+        
+        // no empty spot found, thus evict and add
         if (flag == 0) {
-            int lru_index = 0
-            for (int i = 0; i < Cache.MAX_SIZE; i++) {
-                if (last_accessed[i] > last_accessed[lru_index]) {
-                    lru_index = i
-                }
-            }
-            cache[lru_index] = item
-            access_counter++
-            last_accessed[lru_index] = access_counter
+            int mru_display = mru_order[order_size - 1] // MRU - changing this line defines whether it is LRU or MRU
+            int mru_index = mru_display - 1
+            cache[mru_index] = item // replace
+            // Remove the last element by reducing order_size
+            order_size = order_size - 1
+            
+            // Add the new index at the end
+            addToMRUOrder(mru_index)
         }
     }
-
+    
     void Cache:printCache() {
-        if (cache == null) { initCache() }
+        if (cache == null) { 
+            initCache() 
+        }
+        out.println("$mode")
         out.print("[ ")
         for (int i = 0; i < Cache.MAX_SIZE; i++) {
-            if (cache[i] == null) { break }
+            if (cache[i] == null) { 
+                break 
+            }
             out.print("$(iu.intToString(cache[i].key))-$(iu.intToString(cache[i].value))  ")
         }
         out.print("]\n")
         out.println("Hits: $(iu.intToString(hits)) - Misses: $(iu.intToString(misses))")
-
-        out.print("[")
-        for (int i = 0; i < Cache.MAX_SIZE; i++) {
-            if (last_accessed[i] == null) { break }
-            out.print("$(iu.intToString(last_accessed[i]))  ")
+        
+        out.print("Access order: [")
+        for (int i = 0; i < order_size; i++) {
+            out.print(" $(iu.intToString(mru_order[i]))")
         }
-        out.print("]\n")
+        out.print(" ]\n")
+        out.println("---------------------------")
     }
-
+    
     int Cache:getHits() {
         return hits
     }
-
+    
     int Cache:getMisses() {
         return misses
     }

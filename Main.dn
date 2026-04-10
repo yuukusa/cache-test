@@ -1,46 +1,57 @@
-component provides App requires Cache c, io.Output out, data.IntUtil iu {
+component provides App requires Cache c, io.Output out, data.IntUtil iu, time.Timer timer, util.Random random, time.Calendar calendar {
    
     int App:main(AppParam params[]) {
-
-        c.add(new CacheItem(1,1))
-        c.add(new CacheItem(2,2))
-        c.add(new CacheItem(3,3))
-        c.add(new CacheItem(4,4))
-        c.add(new CacheItem(5,5))
-        c.add(new CacheItem(6,6))
-        c.add(new CacheItem(7,7))
-        c.add(new CacheItem(8,8))
-        c.add(new CacheItem(9,9))
-        c.add(new CacheItem(10,10))
-
+        random.setSeed(calendar.getMS())
+        int value_range = 1000
+        int operation_count = 0
+        int add_count = 0
+        int get_count = 0
+        int next_key = 1
+        
+        // FILL CACHE
+        out.println("=== INITIAL CACHE ===")
+        for (int i = 0; i < Cache.MAX_SIZE; i++) {
+            int value = random.getInt(value_range)
+            c.add(new CacheItem(next_key, value))
+            next_key++
+        }
         c.printCache()
-
-        int result = c.get(1)
-        if ( result == INT_MAX) { out.println("cache.key 1: NOT FOUND") }
-        else { out.println("cache.key 1: $(iu.intToString(result))") } 
-        result = c.get(2)
-        if (result == INT_MAX) { out.println("cache.key 2: NOT FOUND") }
-        else { out.println("cache.key 2: $(iu.intToString(result))") } 
-        result = c.get(3)
-        if (result == INT_MAX) { out.println("cache.key 3: NOT FOUND") }
-        else { out.println("cache.key 3: $(iu.intToString(result))") } 
-        result = c.get(13)
-        if (result == INT_MAX) { out.println("cache.key 13: NOT FOUND") }
-        else { out.println("cache.key 13: $(iu.intToString(result))") } 
-        result = c.get(4)
-        if (result == INT_MAX) { out.println("cache.key 4: NOT FOUND") }
-        else { out.println("cache.key 4: $(iu.intToString(result))") }
-
-        c.add(new CacheItem(11,1000))
-
-        result = c.get(3)
-        if (result == INT_MAX) { out.println("cache.key 3: NOT FOUND") }
-        else { out.println("cache.key 3: $(iu.intToString(result))") } 
-    
-        c.add(new CacheItem(12,1000))
-
-        c.printCache()
-
+        timer.sleep(1000
+        )
+        out.println("=== TEST SEQUENCE ===")
+        while(1) {
+            out.println("=====================================")
+            int operation = random.getInt(100)
+            if (operation < 70) { // 70% get, 30% add
+                //if (next_key > 1) // only if cache starts empty
+                int key = random.getInt(next_key - 1) + 1
+                out.println("--- GET: look for key $(iu.intToString(key)) ---")
+                int value = c.get(key)
+                if (value == INT_MAX) {
+                    out.println("Result: NOT FOUND (miss)")
+                }
+                else {
+                    out.println("Result: value $(iu.intToString(value)) found (hit)")
+                }
+                get_count++
+                //}
+            }
+            else {
+                int value = random.getInt(value_range)
+                out.println("--- ADD: store key $(iu.intToString(next_key)), value = $(iu.intToString(value)) ---")
+                c.add(new CacheItem(next_key, value))
+                add_count++
+                next_key++
+            }
+            
+            c.printCache()
+            operation_count++
+            out.println("TOTAL: $(iu.intToString(operation_count)), Adds: $(iu.intToString(add_count)), Gets: $(iu.intToString(get_count))")
+            out.println("Next key: $(iu.intToString(next_key))")
+            out.println("=====================================")
+            timer.sleep(500)
+        }
+        
         return 0
     }
 }

@@ -9,12 +9,9 @@ interface Cache {
     transfer int index // points to where to include the next item
     transfer int hits
     transfer int misses
-    transfer int lru_order[] // store indices in access order
-    transfer int last_accessed[] // last access timestamp
-    transfer int access_counter // increments at each get/add
 
     int get(int key)
-    bool update(store CacheItem item)
+    //bool update(store CacheItem item)
     void add(store CacheItem item)
     void printCache()
     int getHits()
