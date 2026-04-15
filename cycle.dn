@@ -1,7 +1,7 @@
 /*
  * Prompt para interagir com o pal.rest 
  */
-const char DEFAULT_SERVER_IP[] = "localhost"
+const char DEFAULT_SERVER_IP[] = "127.0.0.1"
 const int DEFAULT_SERVER_PORT = 8008
 
 const char GET_CONFIG[] = "get_config"
