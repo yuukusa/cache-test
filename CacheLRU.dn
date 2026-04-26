@@ -1,4 +1,4 @@
-component provides Cache requires io.Output out, data.IntUtil iu {
+component provides Cache requires io.Output out, data.IntUtil iu, pal.Perception perception {
     int mru_order[] = new int[Cache.MAX_SIZE]  // indices in access order
     int order_size = 0  // current number of entries in MRU
     const char mode[] = "Least Recently Used (LRU)"
@@ -6,8 +6,6 @@ component provides Cache requires io.Output out, data.IntUtil iu {
     void initCache() {
         cache = new CacheItem[Cache.MAX_SIZE]
         index = 0
-        hits = 0
-        misses = 0
         order_size = 0
     }
     
@@ -43,7 +41,7 @@ component provides Cache requires io.Output out, data.IntUtil iu {
         for (int i = 0; i < Cache.MAX_SIZE; i++) {
             if (cache[i] != null) {
                 if (cache[i].key == key) {
-                    hits++
+                    perception.addMetric("hits", 1, true)
                     updateMRUOrder(i)
                     return cache[i].value
                 }
@@ -52,7 +50,7 @@ component provides Cache requires io.Output out, data.IntUtil iu {
             }
         }
         
-        misses++
+        perception.addMetric("misses", 1, false)
         return INT_MAX
     }
     
@@ -111,7 +109,6 @@ component provides Cache requires io.Output out, data.IntUtil iu {
             out.print("$(iu.intToString(cache[i].key))-$(iu.intToString(cache[i].value))  ")
         }
         out.print("]\n")
-        out.println("Hits: $(iu.intToString(hits)) - Misses: $(iu.intToString(misses))")
         
         out.print("Access order: [")
         for (int i = 0; i < order_size; i++) {
@@ -119,13 +116,5 @@ component provides Cache requires io.Output out, data.IntUtil iu {
         }
         out.print(" ]\n")
         out.println("---------------------------")
-    }
-    
-    int Cache:getHits() {
-        return hits
-    }
-    
-    int Cache:getMisses() {
-        return misses
     }
 }

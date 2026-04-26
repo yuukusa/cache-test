@@ -1,0 +1,7 @@
+component provides App requires io.Output out, net.http.HTTPRequest req, data.IntUtil iu {
+    int App:main(AppParam params[]) {
+        HTTPResponse resp = req.get("http://localhost:8080/", null)
+        out.println("$(resp.responseMessage)")
+        return 0
+    }
+}

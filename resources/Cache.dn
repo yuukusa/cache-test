@@ -7,13 +7,9 @@ interface Cache {
     const int MAX_SIZE = 10
     transfer CacheItem cache[]
     transfer int index // points to where to include the next item
-    transfer int hits
-    transfer int misses
 
     int get(int key)
     //bool update(store CacheItem item)
     void add(store CacheItem item)
     void printCache()
-    int getHits()
-    int getMisses()
 }

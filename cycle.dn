@@ -7,6 +7,7 @@ const int DEFAULT_SERVER_PORT = 8008
 const char GET_CONFIG[] = "get_config"
 const char GET_CONFIGS[] = "get_all_configs"
 const char SET_CONFIG[] = "set_config"
+const char GET_PERCEPTION_DATA[] = "get_perception_data"
 
 component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil iu, io.Input in, data.StringUtil strUtil {
 	RestAPI restAPI
@@ -32,6 +33,10 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 		} else if (cmd == SET_CONFIG) {
 			restAPI.setConfig(configs[op].string)
 			out.println("configuracao alterada!")
+		} else if (cmd == GET_PERCEPTION_DATA) {
+			PerceptionData pData = restAPI.getPerception()
+			for (int i = 0; i < pData.metrics.arrayLength; i++)
+				out.println("$(pData.metrics[i].name): $(iu.intToString(pData.metrics[i].totalValue))")
 		} else {
 			out.println("ERROR!")
 		}
@@ -41,6 +46,7 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 		restAPI = new RestAPI(DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT)
 		out.println("Sejam bem-vindos ao prompt test!")
 		out.println("Os comandos sao:")
+		out.println("$(GET_PERCEPTION_DATA) \t Para pegar o número de misses e hits gerado pelo componente de cache")
 		out.println("$(GET_CONFIG) \t Para retornar a configuracao atual")
 		out.println("$(GET_CONFIGS) \t Para retornar todas as possiveis configuracoes")
 		out.println("$(SET_CONFIG) 0 \t Para adaptar para a primeira configuracao. \nNote que o 0 e o indice da lista retornada pelo get_all_configs\n")
