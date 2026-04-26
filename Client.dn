@@ -1,7 +1,16 @@
 component provides App requires io.Output out, net.http.HTTPRequest req, data.IntUtil iu {
+    void printResp(HTTPResponse resp) {
+        char txtResp[] = resp.content
+        out.println("[$(resp.responseMessage)] - $(txtResp)")
+    }
+
     int App:main(AppParam params[]) {
-        HTTPResponse resp = req.get("http://localhost:8080/", null)
-        out.println("$(resp.responseMessage)")
+        printResp(req.get("http://localhost:8080/?method=GET&item=10", null))
+        printResp(req.get("http://localhost:8080/?method=GET&item=11", null))
+        printResp(req.get("http://localhost:8080/?method=ADD&item=10", null))
+        printResp(req.get("http://localhost:8080/?method=ADD&item=11", null))
+        printResp(req.get("http://localhost:8080/?method=GET&item=10", null))
+        printResp(req.get("http://localhost:8080/?method=GET&item=11", null))
         return 0
     }
 }

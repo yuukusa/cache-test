@@ -1,47 +1,48 @@
-const int SERVER_PORT= 8080
+const int SERVER_PORT = 8080
+const char SERVER_NAME[] = "Dana Web Server"
 
-component provides App requires io.Output out, data.IntUtil iu, net.TCPSocket, net.TCPServerSocket, 
-    http.HTTPUtil httpUtil {
+component provides App requires Cache c, io.Output out, data.IntUtil iu, net.TCPSocket, 
+    net.TCPServerSocket, http.HTTPUtil httpUtil, data.StringUtil strUtil {
 	
     void handleRequest(TCPSocket s) {
-		HTTPMessage httpMessage = httpUtil.readHTTPRequest(s)
+        HTTPMessage httpMessage = httpUtil.readHTTPRequest(s)
 		if (httpMessage != null) {
-            out.println("TESTANDO")
-            out.println("$(httpMessage.command) - $(httpMessage.resource) - $(httpMessage.queryString)")
-
-
-			/*if (httpMessage.resourceExists) {
-                File fd = new File(httpMessage.resource, File.FILE_ACCESS_READ)
-                httpMessage.socket.send("HTTP/1.1 200 OK\r\n")
-                httpMessage.socket.send("Server: $(HTTPUtil.SERVER_NAME)\r\n")
-                httpMessage.socket.send("Content-Encoding: binary\r\n")
-                httpMessage.socket.send("Content-Length: $(iu.intToString(fd.getSize()))\r\n")
-                httpMessage.socket.send("Connection: close\r\n")
-                httpMessage.socket.send("Content-Type: $(httpMessage.mimeType)\r\n")
-                httpMessage.socket.send("\r\n")
-                byte fbuf[]
-                int tl = 0
-                while ((fbuf = fd.read(HTTPUtil.BUFF_SIZE)).arrayLength > 0) {
-                    tl += fbuf.arrayLength
-                    httpMessage.socket.send(fbuf)
-                }
-                fd.close()
-            } else {
-                httpMessage.socket.send("HTTP/1.0 404 Resource Not Found\r\n")
-                httpMessage.socket.send("Server: $(HTTPUtil.SERVER_NAME)\r\n")
-                httpMessage.socket.send("Connection: close\r\n")
-                httpMessage.socket.send("\r\n")
-            }*/
-            httpMessage.socket.send("HTTP/1.0 404 Resource Not Found\r\n")
-            httpMessage.socket.send("Server: $(http.HTTPUtil.SERVER_NAME)\r\n")
+            char response[] = processingRequest(httpMessage.queryString)
+            httpMessage.socket.send("HTTP/1.1 200 OK\r\n")
+            httpMessage.socket.send("Server: $(SERVER_NAME)\r\n")
+            httpMessage.socket.send("Content-Encoding: binary\r\n")
+            httpMessage.socket.send("Content-Length: $(iu.intToString(response.arrayLength)))\r\n")
             httpMessage.socket.send("Connection: close\r\n")
+            httpMessage.socket.send("Content-Type: $(httpMessage.mimeType)\r\n")
             httpMessage.socket.send("\r\n")
-		}
-		//s.disconnect()
+            httpMessage.socket.send(response)
+        }
+        s.disconnect()
 	}
+
+    char[] processingRequest(char queryString[]) {
+        String helper[] = strUtil.explode(queryString, "&")
+        String method[] = strUtil.explode(helper[0].string, "=")
+        String item[] = strUtil.explode(helper[1].string, "=")
+        int value = 0
+        if (method[1].string == "GET") {
+            value = c.get(iu.intFromString(item[1].string))
+            if (value == INT_MAX) {
+                return "MISS"
+            } else {
+                return "HIT"
+            }
+        } else if (method[1].string == "ADD") {
+            value = iu.intFromString(item[1].string)
+            c.add(new CacheItem(value, value)) // value and key is the same
+            return "ADDED"
+        }
+        return "ERROR"
+    }
     
     
     int App:main(AppParam params[]) {
+        out.println("CACHE SERVER RUNNING...")
 		TCPServerSocket host = new TCPServerSocket()
 		if (!host.bind(TCPServerSocket.ANY_ADDRESS, SERVER_PORT)) {
 			out.println("Error: failed to bind master socket")

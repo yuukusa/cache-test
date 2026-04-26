@@ -16,8 +16,7 @@ component provides App requires Cache c, io.Output out, data.IntUtil iu, time.Ti
             next_key++
         }
         c.printCache()
-        timer.sleep(1000
-        )
+        timer.sleep(1000)
         out.println("=== TEST SEQUENCE ===")
         while(1) {
             out.println("=====================================")
