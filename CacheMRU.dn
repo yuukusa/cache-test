@@ -1,7 +1,9 @@
-component provides Cache requires io.Output out, data.IntUtil iu, pal.Perception perception {
+component provides Cache(Destructor, AdaptEvents) requires io.Output out, data.IntUtil iu, pal.Perception perception {
     int mru_order[] = new int[Cache.MAX_SIZE]  // indices in access order
     int order_size = 0  // current number of entries in MRU
     const char mode[] = "Most Recently Used (MRU)"
+    CacheItem cache[]
+    int index
     
     void initCache() {
         cache = new CacheItem[Cache.MAX_SIZE]
@@ -116,4 +118,22 @@ component provides Cache requires io.Output out, data.IntUtil iu, pal.Perception
         out.print(" ]\n")
         out.println("---------------------------")
     }
+
+    void clearList() {
+        cache = null
+        index = 0
+    }
+
+    void Destructor:destroy() {
+		clearList()
+	}
+	
+	void AdaptEvents:inactive() {
+		content = cache
+	}
+	
+	void AdaptEvents:active() {
+		for (int i = 0; i < content.arrayLength; i++)
+            add(content[i])
+	}
 }

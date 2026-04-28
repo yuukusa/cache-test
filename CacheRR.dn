@@ -1,5 +1,8 @@
-component provides Cache requires io.Output out, data.IntUtil iu, util.Random random, time.Calendar calendar, pal.Perception perception {
+component provides Cache(Destructor, AdaptEvents) requires io.Output out, data.IntUtil iu, util.Random random, time.Calendar calendar, pal.Perception perception {
     const char mode[] = "Random Replacement"
+    CacheItem cache[]
+    int index
+    
     void initCache() {
         cache = new CacheItem[Cache.MAX_SIZE]
         index = 0
@@ -59,4 +62,22 @@ component provides Cache requires io.Output out, data.IntUtil iu, util.Random ra
         out.print("]\n")
         out.println("---------------------------")
     }
+
+    void clearList() {
+        cache = null
+        index = 0
+    }
+
+    void Destructor:destroy() {
+		clearList()
+	}
+	
+	void AdaptEvents:inactive() {
+		content = cache
+	}
+	
+	void AdaptEvents:active() {
+		for (int i = 0; i < content.arrayLength; i++)
+            add(content[i])
+	}
 }
