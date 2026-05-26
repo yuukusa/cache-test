@@ -1,16 +1,130 @@
-component provides App requires io.Output out, net.http.HTTPRequest req, data.IntUtil iu {
+const char DEFAULT_TEST[] = "def_test"
+const char FIFO_TEST[] = "fifo_test"
+const char MRU_TEST[] = "mru_test"
+const char RAN_TEST[] = "ran_test"
+const char LRU_TEST[] = "lru_test"
+
+const int MAX_SIZE = 10
+component provides App requires io.Output out, io.Input in, net.http.HTTPRequest req,
+	data.IntUtil iu, data.StringUtil strUtil, util.Random random, time.Calendar calendar,
+	time.Timer timer {
+
     void printResp(HTTPResponse resp) {
         char txtResp[] = resp.content
         out.println("[$(resp.responseMessage)] - $(txtResp)")
     }
 
+	void interpret(char cmd[]) {
+		String helper[] = strUtil.explode(cmd, " ")
+		if (helper.arrayLength == 1)
+			execute(helper[0].string, 11)
+		else if (helper.arrayLength == 2)
+			execute(helper[0].string, iu.intFromString(helper[1].string))
+		else
+			out.println("ERROR!")
+	}
+
+	void execute(char cmd[], int op) {
+		if (cmd == DEFAULT_TEST) {
+			default_test()
+		} else if (cmd == RAN_TEST) {
+			ran_test()
+		} else if (cmd == MRU_TEST) {
+			mru_test()
+		} else if (cmd == LRU_TEST) {
+			lru_test()
+		} else if (cmd == FIFO_TEST) {
+			fifo_test()
+		} else {
+			out.println("ERROR!")
+		}
+	}
+
+    void default_test() {
+        for (int i = 0; i < MAX_SIZE; i++) {
+			printResp(req.get("http://localhost:8080/?method=GET&item=$i", null))
+		}
+		printResp(req.get("http://localhost:8080/?method=GET&item=20", null))
+		printResp(req.get("http://localhost:8080/?method=GET&item=21", null))
+		printResp(req.get("http://localhost:8080/?method=PRINT&item=0", null))
+    }
+
+	void ran_test() {
+		int j = MAX_SIZE
+		while(1) {
+			for (int i = 0; i < MAX_SIZE; i++) {
+				printResp(req.get("http://localhost:8080/?method=GET&item=$i", null))
+			}
+			printResp(req.get("http://localhost:8080/?method=GET&item=$j", null))
+			j = j + 1
+			printResp(req.get("http://localhost:8080/?method=PRINT&item=0", null))
+		}
+	}
+
+	void mru_test() {
+		int j = 1
+		while(1) {
+			printResp(req.get("http://localhost:8080/?method=GET&item=$j", null))
+			printResp(req.get("http://localhost:8080/?method=GET&item=$j", null))
+			j = j % (MAX_SIZE + 1) + 1
+			printResp(req.get("http://localhost:8080/?method=PRINT&item=0", null))
+		}
+	}
+	// mudar
+	void lru_test() {
+		int HOT_SIZE = 7
+		int FLOOD_SIZE = 3
+		int ohw_counter = 8
+		while(1) {
+			for (int repeat = 0; repeat < 3; repeat++) {
+				for (int i = 1; i <= HOT_SIZE; i++) {
+					printResp(req.get("http://localhost:8080/?method=GET&item=$i", null))
+				}
+			}
+			
+			for (int i = 0; i < FLOOD_SIZE; i++) {
+				printResp(req.get("http://localhost:8080/?method=GET&item=$ohw_counter", null))
+				ohw_counter = ohw_counter + 1
+			}
+			
+			for (int i = 1; i <= HOT_SIZE; i++) {
+				printResp(req.get("http://localhost:8080/?method=GET&item=$i", null))
+			}
+			
+			// reset counter
+			if (ohw_counter > 1000) {
+				ohw_counter = 8
+			}
+    	}
+	}
+
+	void fifo_test() {
+		int CACHE_SIZE = 10
+		int WORKING_SET = CACHE_SIZE + 2
+		
+		while(1) {
+			for (int i = 1; i <= WORKING_SET; i++) {
+				printResp(req.get("http://localhost:8080/?method=GET&item=$i", null))
+			}
+		}
+	}
+
     int App:main(AppParam params[]) {
-        printResp(req.get("http://localhost:8080/?method=GET&item=10", null))
-        printResp(req.get("http://localhost:8080/?method=GET&item=11", null))
-        printResp(req.get("http://localhost:8080/?method=ADD&item=10", null))
-        printResp(req.get("http://localhost:8080/?method=ADD&item=11", null))
-        printResp(req.get("http://localhost:8080/?method=GET&item=10", null))
-        printResp(req.get("http://localhost:8080/?method=GET&item=11", null))
-        return 0
+        out.println("Painel de comandos do Client")
+        out.println("Comandos disponíveis:")
+        out.println("$(DEFAULT_TEST) \t Sequência de teste padrão.")
+		out.println("$(FIFO_TEST)")
+		out.println("$(MRU_TEST)")
+		out.println("$(LRU_TEST)")
+		out.println("$(RAN_TEST)")
+        char cmd[]
+		while (1) {
+			out.print("cmd> ")
+			cmd = in.readln()
+			if (cmd == "exit") break
+			interpret(cmd)
+		}
+		out.println("Encerrando o cliente...")
+		return 0
     }
 }

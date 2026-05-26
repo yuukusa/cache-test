@@ -8,8 +8,11 @@ const char GET_CONFIG[] = "get_config"
 const char GET_CONFIGS[] = "get_all_configs"
 const char SET_CONFIG[] = "set_config"
 const char GET_PERCEPTION_DATA[] = "get_perception_data"
+const char TEST_MODE[] = "test_mode"
 
-component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil iu, io.Input in, data.StringUtil strUtil {
+component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil iu, io.Input in, data.StringUtil strUtil,
+	time.Timer timer, data.DecUtil du {
+
 	RestAPI restAPI
 	String configs[]
 
@@ -37,6 +40,36 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 			PerceptionData pData = restAPI.getPerception()
 			for (int i = 0; i < pData.metrics.arrayLength; i++)
 				out.println("$(pData.metrics[i].name): $(iu.intToString(pData.metrics[i].totalValue))")
+		} else if (cmd == TEST_MODE) {
+			out.println("Iniciando modo de teste...")
+			int hits = 0
+			int misses = 0
+			int total = 0
+			PerceptionData pData = restAPI.getPerception()
+			for(int i = 0; i < configs.arrayLength; i++) {
+				restAPI.setConfig(configs[i].string)
+				out.println("Modo: $(configs[i].string)")
+				timer.sleep(5000)
+				pData = restAPI.getPerception()
+				for (int j = 0; j < pData.metrics.arrayLength; j++) {
+					if (pData.metrics[j].name == "hits") {
+						hits = pData.metrics[j].totalValue
+					}
+					if (pData.metrics[j].name == "misses") {
+						misses = pData.metrics[j].totalValue
+					}
+				}
+				total = hits + misses
+				out.println("Hits: $(iu.intToString(hits))")
+				out.println("Misses: $(iu.intToString(misses))")
+				out.println("Total: $(iu.intToString(total))")
+				if (total > 0) {
+					out.println("Hit Rate: $(du.decToString(hits/total))")  // nao funciona...
+				}
+				hits = 0
+				misses = 0
+				total = 0
+			}
 		} else {
 			out.println("ERROR!")
 		}
@@ -61,5 +94,4 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 		out.println("Obrigado por ter usado o prompt test. Bye! (:")
 		return 0
 	}
-	
 }

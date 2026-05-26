@@ -1,128 +1,76 @@
 component provides Cache(Destructor, AdaptEvents) requires io.Output out, data.IntUtil iu, pal.Perception perception {
-    int mru_order[] = new int[Cache.MAX_SIZE]  // indices in access order
-    int order_size = 0  // current number of entries in MRU
     const char mode[] = "Least Recently Used (LRU)"
     CacheItem cache[]
-    int index
-    
+
     void initCache() {
         cache = new CacheItem[Cache.MAX_SIZE]
-        index = 0
-        order_size = 0
+        pointer = 0
     }
-    
-    // Item was accessed -> move to most recently used position
-    void updateMRUOrder(int cache_index) {
-        int display_index = cache_index + 1 // start display index at 1
-        int pos = 0
-        int found = 0
-        for (int i = 0; i < order_size; i++) { // find where in mru_order where the item index is
-            if (mru_order[i] == display_index) {
-                pos = i
-                found = 1
-                break
-            }
-        }
-        for (int i = pos; i < order_size - 1; i++) { // shift left (erase found item) and
-            mru_order[i] = mru_order[i + 1]
-        }
-        mru_order[order_size - 1] = display_index // reintroduce at the end (MRU position)
-    }
-    
-    void addToMRUOrder(int cache_index) {
-        int display_index = cache_index + 1
-        mru_order[order_size] = display_index
-        order_size = order_size + 1
-    }
-    
+
     int Cache:get(int key) {
-        if (cache == null) { 
-            initCache() 
-        }
-        
+        if (cache == null) { initCache() }
         for (int i = 0; i < Cache.MAX_SIZE; i++) {
             if (cache[i] != null) {
                 if (cache[i].key == key) {
+                    CacheItem foundItem = cache[i]
+                    for (int j = i; j < Cache.MAX_SIZE - 1; j++) { // shift left
+                        cache[j] = cache[j + 1]
+                    }
+                    cache[Cache.MAX_SIZE - 1] = foundItem // MRU at the end
                     perception.addMetric("hits", 1, true)
-                    updateMRUOrder(i)
-                    return cache[i].value
+                    return foundItem.value
                 }
-            } else { 
-                break 
-            }
+            } else { break }
         }
-        
         perception.addMetric("misses", 1, false)
+        add(new CacheItem(key, key))
         return INT_MAX
     }
-    
+
     void Cache:add(store CacheItem item) {
-        if (cache == null) { 
-            initCache() 
-        }
-        
+        if (cache == null) { initCache() }
         int flag = 0
-        
-        // if key already exists, then update
+
         for (int i = 0; i < Cache.MAX_SIZE; i++) {
-            if (cache[i] != null && cache[i].key == item.key) {
-                cache[i] = item
-                updateMRUOrder(i)
+            if (cache[i] != null && cache[i].key == item.key) { // already exists
+                //cache[i] = item
                 flag = 1
                 break
             }
         }
-        
-        // if key does not exist, find next empty spot
         if (flag == 0) {
             for (int i = 0; i < Cache.MAX_SIZE; i++) {
                 if (cache[i] == null) {
                     cache[i] = item
-                    addToMRUOrder(i)
                     flag = 1
                     break
                 }
             }
         }
-        
-        // no empty spot found, thus evict and add
         if (flag == 0) {
-            int mru_display = mru_order[0] // LRU - changing this line defines whether it is LRU or MRU
-            int mru_index = mru_display - 1
-            cache[mru_index] = item // replace
-            // Remove the last element by reducing order_size
-            order_size = order_size - 1
-            
-            // Add the new index at the end
-            addToMRUOrder(mru_index)
+            for (int i = 0; i < Cache.MAX_SIZE - 1; i++) { // shift left
+                cache[i] = cache[i + 1]
+            }
+            cache[Cache.MAX_SIZE - 1] = item // evict LRU element and add new item
         }
     }
-    
+
     void Cache:printCache() {
-        if (cache == null) { 
-            initCache() 
-        }
+        if (cache == null) { initCache() }
         out.println("$mode")
         out.print("[ ")
         for (int i = 0; i < Cache.MAX_SIZE; i++) {
-            if (cache[i] == null) { 
-                break 
+            if (cache[i] != null) {
+                out.print("$(iu.intToString(cache[i].key))-$(iu.intToString(cache[i].value))  ")
             }
-            out.print("$(iu.intToString(cache[i].key))-$(iu.intToString(cache[i].value))  ")
         }
         out.print("]\n")
-        
-        out.print("Access order: [")
-        for (int i = 0; i < order_size; i++) {
-            out.print(" $(iu.intToString(mru_order[i]))")
-        }
-        out.print(" ]\n")
         out.println("---------------------------")
     }
 
     void clearList() {
         cache = null
-        index = 0
+        pointer = 0
     }
 
     void Destructor:destroy() {
@@ -137,4 +85,5 @@ component provides Cache(Destructor, AdaptEvents) requires io.Output out, data.I
 		for (int i = 0; i < content.arrayLength; i++)
             add(content[i])
 	}
+	
 }

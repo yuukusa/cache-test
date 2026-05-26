@@ -36,11 +36,14 @@ component provides App requires Cache c, io.Output out, data.IntUtil iu, net.TCP
             value = iu.intFromString(item[1].string)
             c.add(new CacheItem(value, value)) // value and key is the same
             return "ADDED"
+        } else if(method[1].string == "PRINT") {
+            c.printCache()
+            return "PRINTED"
         }
         return "ERROR"
     }
-    
-    
+   
+
     int App:main(AppParam params[]) {
         out.println("CACHE SERVER RUNNING...")
 		TCPServerSocket host = new TCPServerSocket()

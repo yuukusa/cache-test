@@ -6,7 +6,7 @@ data CacheItem {
 interface Cache {
     const int MAX_SIZE = 10
     transfer CacheItem content[]
-   // transfer int pointer // points to where to include the next item
+    transfer int pointer // points to where to include the next item
 
     int get(int key)
     //bool update(store CacheItem item)

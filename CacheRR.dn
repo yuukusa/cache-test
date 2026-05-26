@@ -1,11 +1,10 @@
 component provides Cache(Destructor, AdaptEvents) requires io.Output out, data.IntUtil iu, util.Random random, time.Calendar calendar, pal.Perception perception {
     const char mode[] = "Random Replacement"
     CacheItem cache[]
-    int index
-    
+
     void initCache() {
         cache = new CacheItem[Cache.MAX_SIZE]
-        index = 0
+        pointer = 0
         random.setSeed(calendar.getMS())
     }
 
@@ -20,16 +19,16 @@ component provides Cache(Destructor, AdaptEvents) requires io.Output out, data.I
             } else { break }
         }
         perception.addMetric("misses", 1, true)
+        add(new CacheItem(key, key))
         return INT_MAX
     }
     
     void Cache:add(store CacheItem item) {
         if (cache == null) { initCache() }
         int flag = 0
-
         for (int i = 0; i < Cache.MAX_SIZE; i++) {
-            if (cache[i] != null && cache[i].key == item.key) {
-                cache[i] = item
+            if (cache[i] != null && cache[i].key == item.key) { // already exists
+                //cache[i] = item
                 flag = 1
                 break
             }
@@ -46,8 +45,8 @@ component provides Cache(Destructor, AdaptEvents) requires io.Output out, data.I
         }
 
         if (flag == 0) {
-            int random_index = random.getInt(Cache.MAX_SIZE - 1)
-            cache[random_index] = item
+            pointer = random.getInt(Cache.MAX_SIZE)
+            cache[pointer] = item
         }
     }
 
@@ -65,7 +64,7 @@ component provides Cache(Destructor, AdaptEvents) requires io.Output out, data.I
 
     void clearList() {
         cache = null
-        index = 0
+        pointer = 0
     }
 
     void Destructor:destroy() {

@@ -1,11 +1,10 @@
 component provides Cache(Destructor, AdaptEvents) requires io.Output out, data.IntUtil iu, pal.Perception perception {
     const char mode[] = "First In First Out (FIFO)"
     CacheItem cache[]
-    int index
 
     void initCache() {
         cache = new CacheItem[Cache.MAX_SIZE]
-        index = 0
+        pointer = 0
     }
 
     int Cache:get(int key) {
@@ -19,24 +18,25 @@ component provides Cache(Destructor, AdaptEvents) requires io.Output out, data.I
             } else { break }
         }
         perception.addMetric("misses", 1, false)
+        add(new CacheItem(key, key))
         return INT_MAX
     }
 
     // replacement algorithm should be implemented here
     void Cache:add(store CacheItem item) {
         if (cache == null) { initCache() }
+        if (pointer >= Cache.MAX_SIZE) { pointer = 0 }
         int flag = 0
-
         for (int i = 0; i < Cache.MAX_SIZE; i++) {
-            if (cache[i] != null && cache[i].key == item.key) {
-                cache[i] = item
+            if (cache[i] != null && cache[i].key == item.key) { // already exists
+                //cache[i] = item
                 flag = 1
+                break
             }
         }
         if (flag == 0) {
-            if (index >= Cache.MAX_SIZE) { index = 0 }
-            cache[index] = item
-            index++
+            cache[pointer] = item
+            pointer++
         }
     }
 
@@ -54,7 +54,7 @@ component provides Cache(Destructor, AdaptEvents) requires io.Output out, data.I
 
     void clearList() {
         cache = null
-        index = 0
+        pointer = 0
     }
 
     void Destructor:destroy() {
