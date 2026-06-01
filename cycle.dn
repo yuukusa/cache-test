@@ -9,6 +9,7 @@ const char GET_CONFIGS[] = "get_all_configs"
 const char SET_CONFIG[] = "set_config"
 const char GET_PERCEPTION_DATA[] = "get_perception_data"
 const char TEST_MODE[] = "test_mode"
+const char UCB_TEST[] = "ucb_test"
 
 component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil iu, io.Input in, data.StringUtil strUtil,
 	time.Timer timer, data.DecUtil du {
@@ -42,38 +43,57 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 				out.println("$(pData.metrics[i].name): $(iu.intToString(pData.metrics[i].totalValue))")
 		} else if (cmd == TEST_MODE) {
 			out.println("Iniciando modo de teste...")
-			int hits = 0
-			int misses = 0
-			int total = 0
-			PerceptionData pData = restAPI.getPerception()
-			for(int i = 0; i < configs.arrayLength; i++) {
-				restAPI.setConfig(configs[i].string)
+			dec results[] = new dec[](0.0,0.0)
+			for(int i = 0; i < configs.arrayLength; i++) { // go through each config
 				out.println("Modo: $(configs[i].string)")
-				timer.sleep(5000)
-				pData = restAPI.getPerception()
-				for (int j = 0; j < pData.metrics.arrayLength; j++) {
-					if (pData.metrics[j].name == "hits") {
-						hits = pData.metrics[j].totalValue
-					}
-					if (pData.metrics[j].name == "misses") {
-						misses = pData.metrics[j].totalValue
-					}
-				}
-				total = hits + misses
-				out.println("Hits: $(iu.intToString(hits))")
-				out.println("Misses: $(iu.intToString(misses))")
-				out.println("Total: $(iu.intToString(total))")
-				if (total > 0) {
-					out.println("Hit Rate: $(du.decToString(hits/total))")  // nao funciona...
-				}
-				hits = 0
-				misses = 0
-				total = 0
+				results = collectMetrics(i)
+				printResults(results)
 			}
+		} else if (cmd == UCB_TEST) {
+			out.println("Em construção...")
 		} else {
 			out.println("ERROR!")
 		}
 	}
+
+	dec[] collectMetrics(int index) {
+		PerceptionData pData
+		restAPI.setConfig(configs[index].string) // set_config to index
+		dec hits = 0
+		dec misses = 0
+		dec results[] = new dec[](0.0,0.0)
+		timer.sleep(5000)
+		pData = restAPI.getPerception()
+		for (int j = 0; j < pData.metrics.arrayLength; j++) {
+			if (pData.metrics[j].name == "hits") {
+				hits = pData.metrics[j].totalValue
+			}
+			if (pData.metrics[j].name == "misses") {
+				misses = pData.metrics[j].totalValue
+			}
+		}
+		results[0] = hits
+		results[1] = misses
+		return results
+	}
+
+	void printResults(dec results[]) {
+		dec total = results[0] + results[1]
+		out.println("Hits: $(iu.intToString(results[0]))")
+		out.println("Misses: $(iu.intToString(results[1]))")
+		out.println("Total: $(iu.intToString(total))")
+		if (total > 0) {
+			out.println("Hit Rate: $(du.makeString(results[0]/total))")
+		}
+	}
+
+	int ucb_select() {
+		int bestIndex = 0
+		dec bestValue = 0
+
+		return bestIndex
+	}
+	
 
 	int App:main(AppParam params[]) {
 		restAPI = new RestAPI(DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT)
