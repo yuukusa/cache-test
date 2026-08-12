@@ -58,6 +58,7 @@ component provides App requires io.Output out, io.Input in, net.http.HTTPRequest
 			printResp(req.get("http://localhost:8080/?method=GET&item=$j", null))
 			j = j + 1
 			printResp(req.get("http://localhost:8080/?method=PRINT&item=0", null))
+			timer.sleep(0.01)
 		}
 	}
 
@@ -68,6 +69,7 @@ component provides App requires io.Output out, io.Input in, net.http.HTTPRequest
 			printResp(req.get("http://localhost:8080/?method=GET&item=$j", null))
 			j = j % (MAX_SIZE + 1) + 1
 			printResp(req.get("http://localhost:8080/?method=PRINT&item=0", null))
+			timer.sleep(0.01)
 		}
 	}
 	// mudar
@@ -95,6 +97,7 @@ component provides App requires io.Output out, io.Input in, net.http.HTTPRequest
 			if (ohw_counter > 1000) {
 				ohw_counter = 8
 			}
+			timer.sleep(0.01)
     	}
 	}
 
@@ -106,6 +109,7 @@ component provides App requires io.Output out, io.Input in, net.http.HTTPRequest
 			for (int i = 1; i <= WORKING_SET; i++) {
 				printResp(req.get("http://localhost:8080/?method=GET&item=$i", null))
 			}
+			timer.sleep(0.01)
 		}
 	}
 

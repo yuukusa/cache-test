@@ -8,11 +8,11 @@ const char GET_CONFIG[] = "get_config"
 const char GET_CONFIGS[] = "get_all_configs"
 const char SET_CONFIG[] = "set_config"
 const char GET_PERCEPTION_DATA[] = "get_perception_data"
-const char TEST_MODE[] = "test_mode"
-const char UCB_TEST[] = "ucb_test"
+const char TEST[] = "test"
+const char UCB1[] = "ucb1"
 
 component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil iu, io.Input in, data.StringUtil strUtil,
-	time.Timer timer, data.DecUtil du {
+	time.Timer timer, data.DecUtil du, util.Math math {
 
 	RestAPI restAPI
 	String configs[]
@@ -41,16 +41,58 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 			PerceptionData pData = restAPI.getPerception()
 			for (int i = 0; i < pData.metrics.arrayLength; i++)
 				out.println("$(pData.metrics[i].name): $(iu.intToString(pData.metrics[i].totalValue))")
-		} else if (cmd == TEST_MODE) {
+		} else if (cmd == TEST) {
 			out.println("Iniciando modo de teste...")
 			dec results[] = new dec[](0.0,0.0)
 			for(int i = 0; i < configs.arrayLength; i++) { // go through each config
 				out.println("Modo: $(configs[i].string)")
-				results = collectMetrics(i)
+				results = collectMetrics(i) // [hits, misses]
 				printResults(results)
 			}
-		} else if (cmd == UCB_TEST) {
-			out.println("Em construção...")
+		} else if (cmd == UCB1) { // refactor
+			// setup
+			int k = configs.arrayLength // number of components
+			dec ucb1_values[] = new dec [k]
+			int pull_count[] = new int [k]
+			for (int i = 0; i < k; i++)
+            	pull_count[i] = 0
+			dec total_rewards[] = new dec [k]
+			for (int i = 0; i < k; i++)
+            	total_rewards[i] = 0.0
+			int rounds = 1000
+			int highest_index
+			dec decround
+			dec decpulls
+			dec results[] = new dec [2]
+			out.println("Iniciando teste ucb1:")
+			// main loop
+			for (int i = 1; i < rounds + 1; i++) {
+				out.println("Round $(i)")
+				// update ucb values
+				decround = i
+				for (int arms = 0; arms < k; arms++) {
+					decpulls = pull_count[arms]
+					ucb1_values[arms] = calculate_ucb1(total_rewards[arms], pull_count[arms], decround)
+				}
+				// find highest
+				highest_index = max(ucb1_values, k)
+				// pull highest valued arm and add reward
+				results = collectMetrics(highest_index)
+				pull_count[highest_index] = pull_count[highest_index] + 1
+				total_rewards[highest_index] = total_rewards[highest_index] + results[0]
+			}
+			char toPrint[]
+			out.println("Pull counts:")
+			for (int i = 0; i < k; i++) {
+				toPrint = iu.makeString(pull_count[i])
+				out.println(toPrint)
+			}
+			out.println("Accumulated rewards:")
+			for (int i = 0; i < k; i++) {
+				toPrint = iu.makeString(total_rewards[i])
+				out.println(toPrint)
+			}
+
 		} else {
 			out.println("ERROR!")
 		}
@@ -62,7 +104,7 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 		dec hits = 0
 		dec misses = 0
 		dec results[] = new dec[](0.0,0.0)
-		timer.sleep(5000)
+		timer.sleep(10)
 		pData = restAPI.getPerception()
 		for (int j = 0; j < pData.metrics.arrayLength; j++) {
 			if (pData.metrics[j].name == "hits") {
@@ -87,13 +129,30 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 		}
 	}
 
-	int ucb_select() {
-		int bestIndex = 0
-		dec bestValue = 0
-
-		return bestIndex
+	dec calculate_ucb1(dec total_reward, dec pull_count, int round) {
+		dec updated_value
+        if (pull_count > 0)
+            updated_value = (total_reward / pull_count) + math.sqrt( (2 * math.log(round)) / pull_count )
+        else
+            updated_value = 0x3f3f3f3f
+        
+        return updated_value
 	}
-	
+
+    int max(dec values[], int arms) 
+    {
+        dec max_value = values[0]
+        int max_index = 0
+        for (int i = 0; i < arms; i++)
+        {
+            if (values[i] > max_value)
+            {
+                max_value = values[i]
+                max_index = i
+            }
+        }
+        return max_index
+    }
 
 	int App:main(AppParam params[]) {
 		restAPI = new RestAPI(DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT)
