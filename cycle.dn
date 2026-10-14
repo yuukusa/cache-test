@@ -10,9 +10,13 @@ const char SET_CONFIG[] = "set_config"
 const char GET_PERCEPTION_DATA[] = "get_perception_data"
 const char TEST[] = "test"
 const char UCB1[] = "ucb1"
+const char GREEDY[] = "greedy"
+const char EGREEDY[] = "e-greedy"
+const char LINUCB[] = "linucb"
+const char WEIRD[] = "weird"
 
 component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil iu, io.Input in, data.StringUtil strUtil,
-	time.Timer timer, data.DecUtil du, util.Math math {
+	time.Timer timer, data.DecUtil du, util.Math math, time.Calendar calendar, util.Random random, stats.StatCore stat {
 
 	RestAPI restAPI
 	String configs[]
@@ -49,7 +53,101 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 				results = collectMetrics(i) // [hits, misses]
 				printResults(results)
 			}
-		} else if (cmd == UCB1) { // refactor
+		} else if (cmd == GREEDY) {
+			// setup
+			int k = configs.arrayLength
+			int pull_count[] = new int [k]
+			for (int i = 0; i < k; i++)
+            	pull_count[i] = 0
+			dec total_rewards[] = new dec [k]
+			for (int i = 0; i < k; i++)
+            	total_rewards[i] = 0.0
+			dec averages[] = new dec [k]
+			for (int i = 0; i < k; i++)
+				averages[i] = 0x3f3f3f3f
+			int rounds = 500
+			dec results[] = new dec [2]
+			int chosen_arm
+			out.println("Iniciando teste greedy...")
+			for(int i = 0; i < rounds; i++) {
+				chosen_arm = max(averages, k)
+				results = collectMetrics(chosen_arm)
+				pull_count[chosen_arm] = pull_count[chosen_arm] + 1
+				total_rewards[chosen_arm] = total_rewards[chosen_arm] + results[0]
+				averages[chosen_arm] = total_rewards[chosen_arm] / pull_count[chosen_arm]
+			}
+			char toPrint[]
+			out.println("Pull counts:")
+			for (int i = 0; i < k; i++) {
+				toPrint = iu.makeString(pull_count[i])
+				out.println(toPrint)
+			}
+			out.println("Accumulated rewards:")
+			for (int i = 0; i < k; i++) {
+				toPrint = iu.makeString(total_rewards[i])
+				out.println(toPrint)
+			}
+			out.println("Final averages:")
+			for (int i = 0; i < k; i++) {
+				toPrint = iu.makeString(averages[i])
+				out.println(toPrint)
+			}
+		} else if (cmd == EGREEDY) {
+			// setup
+			int k = configs.arrayLength // number of components
+			dec greedy_values[] = new dec [k]
+			dec results[] = new dec [2]
+			dec epsilon = 0.1
+			int pull_count[] = new int [k]
+			for (int i = 0; i < k; i++)
+            	pull_count[i] = 0
+			dec total_rewards[] = new dec [k]
+			for (int i = 0; i < k; i++)
+            	total_rewards[i] = 0.0
+			dec averages[] = new dec [k]
+			for (int i = 0; i < k; i++)
+				averages[i] = 0.0
+			int highest_index
+			dec decround
+			dec decpulls
+			int rounds = 500
+			dec attempt
+			int chosen_arm
+			out.println("Iniciando teste e-greedy...")
+			// main loop
+			for (int i = 1; i < rounds + 1; i++) {
+				out.println("Round $(i)")
+				attempt = random.getDec(0,1)
+				if (attempt < epsilon) { // 10% chance: explore
+					chosen_arm = random.getInt(k) // random from 0 to top, excluding top
+				}
+				else { // 90% chance: best average
+					chosen_arm = max(averages, k)
+				}
+				// pull
+				results = collectMetrics(chosen_arm)
+				// update
+				pull_count[chosen_arm] = pull_count[chosen_arm] + 1
+				total_rewards[chosen_arm] = total_rewards[chosen_arm] + results[0]
+				averages[chosen_arm] = total_rewards[chosen_arm] / pull_count[chosen_arm]
+			}
+			char toPrint[]
+			out.println("Pull counts:")
+			for (int i = 0; i < k; i++) {
+				toPrint = iu.makeString(pull_count[i])
+				out.println(toPrint)
+			}
+			out.println("Accumulated rewards:")
+			for (int i = 0; i < k; i++) {
+				toPrint = iu.makeString(total_rewards[i])
+				out.println(toPrint)
+			}
+			out.println("Final averages:")
+			for (int i = 0; i < k; i++) {
+				toPrint = iu.makeString(averages[i])
+				out.println(toPrint)
+			}
+		} else if (cmd == UCB1) {
 			// setup
 			int k = configs.arrayLength // number of components
 			dec ucb1_values[] = new dec [k]
@@ -59,7 +157,7 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 			dec total_rewards[] = new dec [k]
 			for (int i = 0; i < k; i++)
             	total_rewards[i] = 0.0
-			int rounds = 1000
+			int rounds = 100
 			int highest_index
 			dec decround
 			dec decpulls
@@ -92,7 +190,283 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 				toPrint = iu.makeString(total_rewards[i])
 				out.println(toPrint)
 			}
+		} else if (cmd == LINUCB) {
+			// setup
+			int rounds = 150//400
+			int n_features = 3
+			int k = configs.arrayLength // number of components
+			int chosen_arm = 0 // default: MRU
+			int last_arm = 0
+			dec last_x[] = new dec [n_features]
+			int h_size = 5
+			int warmup_rounds = h_size*4
+			dec results[] = new dec [2]
+			dec reward
+			dec ucb
+			int final_score[] = new int [k]
+			int flag = 0 // 0: pass, 1: block
+			char toPrint[]
+			// hyperparameters
+			dec alpha = 1.5 // optimism knob
+			dec d = 1.0 // identity scalar
+			// normalization
+			dec hr_samples[] = new dec [warmup_rounds]
+			dec ht_samples[] = new dec [warmup_rounds]
+			dec hv_samples[] = new dec [warmup_rounds]
+			// matrix operations
+			dec u[] = new dec [n_features]
+			dec denom = 1.0
+			// score operations
+			dec best_ucb
+			dec theta[] = new dec [n_features]
+			dec base
+			dec quad
+			dec unc
+			dec u2[] = new dec [n_features]
+			// metrics: recent hit rate, hit rate trend (recent - previous), hit rate volatility (history std deviation)
+			dec x[] = new dec [n_features]
+			dec history[] = new dec [h_size]
+			for (int i = 0; i < h_size; i++)
+				history[i] = 0.0
+			int h_previous = 0
+			int h_recent = 0
+			int h_next = 0
+			dec sum = 0
+			// for each arm: A[arm] 3x3, b[arm] 3x1, A_inv[arm] 3x3
+			dec A[][][] = new dec [k][n_features][n_features]
+			dec b[][] = new dec [k][n_features]
+			dec A_inv[][][] = new dec [k][n_features][n_features]
+			// initialize A as identity, b as 0
+			for (int arm = 0; arm < k; arm++) {
+				for (int i = 0; i < n_features; i++) {
+					b[arm][i] = 0.0
+					for (int j = 0; j < n_features; j++) {
+						if (i == j) {
+							A[arm][i][j] = 1.0
+							A_inv[arm][i][j] = 1.0
+						} else {
+							A[arm][i][j] = 0.0
+							A_inv[arm][i][j] = 0.0
+						}
+					}
+				}
+			}
+			// warm up: fill history
+			for (int i = 0; i < h_size; i++) {
+				results = collectMetrics(chosen_arm)
+				if (results[0] + results[1] == 0)
+					flag = 1
+				while(flag == 1) {
+					out.println("Aguardando requisições...")
+					results = collectMetrics(chosen_arm)
+					if (results[0] + results[1] != 0)
+						flag = 0
+				}
+				history[h_next] = results[0] / (results[0] + results[1]) // add recent hit rate to history
+				h_next = (h_next + 1) % h_size
+				out.print("History array: ")
+				for (int j = 0; j < h_size; j++) {
+					toPrint = du.makeString(history[j])
+					out.println(toPrint)
+				}
+			} 
+			for (int i = 0; i < warmup_rounds; i++) {
+				results = collectMetrics(chosen_arm)
+				if (results[0] + results[1] == 0)
+					flag = 1
+				while(flag == 1) {
+					out.println("Aguardando requisições...")
+					results = collectMetrics(chosen_arm)
+					if (results[0] + results[1] != 0)
+						flag = 0
+				}
+				history[h_next] = results[0] / (results[0] + results[1]) // add recent hit rate to history
+				h_next = (h_next + 1) % h_size
+				h_recent   = (h_next + h_size - 1) % h_size
+    			h_previous = (h_next + h_size - 2) % h_size
+				//hr_samples[i] = history[h_recent]
+				//ht_samples[i] = history[h_recent] - history[h_previous]
+				//hv_samples[i] = stat.stdDev(history)
+				out.print("History array: ")
+				for (int j = 0; j < h_size; j++) {
+					toPrint = du.makeString(history[j])
+					out.println(toPrint)
+				}
+			}
+			// get normalization values
+			/*dec hr_mean = stat.mean(hr_samples)
+			dec hr_std = stat.stdDev(hr_samples)
+			dec ht_mean = stat.mean(ht_samples)
+			dec ht_std = stat.stdDev(ht_samples)
+			dec hv_mean = stat.mean(hv_samples)
+			dec hv_std = stat.stdDev(hv_samples)
+			
+			out.print("hr_mean = ")
+			toPrint = du.makeString(hr_mean)
+			out.println(toPrint)
+			out.println("hr_std = ")
+			toPrint = du.makeString(hr_std)
+			out.println(toPrint)
+			out.print("ht_mean = ")
+			toPrint = du.makeString(ht_mean)
+			out.println(toPrint)
+			out.println("ht_std = ")
+			toPrint = du.makeString(ht_std)
+			out.println(toPrint)
+			out.print("hv_mean = ")
+			toPrint = du.makeString(hv_mean)
+			out.println(toPrint)
+			out.println("hv_std = ")
+			toPrint = du.makeString(hv_std)
+			out.println(toPrint) */
+			/*// WARM UP CHECKUP
+			h_recent = (h_next + h_size - 1) % h_size
+			h_previous = (h_next + h_size - 2) % h_size
+			x[0] = history[h_recent]
+			x[1] = history[h_recent] - history[h_previous]
+			x[2] = stat.stdDev(history)
+			out.print("Feature x[0]: ")
+			toPrint = du.makeString(x[0])
+			out.println(toPrint)
+			out.print("Feature x[1]: ")
+			toPrint = du.makeString(x[1])
+			out.println(toPrint)
+			out.print("Feature x[2]: ")
+			toPrint = du.makeString(x[2])
+			out.println(toPrint)*/
 
+			// main loop
+			for (int i = 1; i < rounds + 1; i++) {
+				out.println("Round $(i)")
+				// drain metrics
+				results = collectMetrics(chosen_arm)
+				if (results[0] + results[1] == 0)
+					flag = 1
+				while(flag == 1) {
+					out.println("Aguardando requisições...")
+					results = collectMetrics(chosen_arm)
+					if (results[0] + results[1] != 0)
+						flag = 0
+				}
+				// update history array + positions
+				history[h_next] = results[0] / (results[0] + results[1])
+				h_next = (h_next + 1) % h_size
+				h_recent = (h_next + h_size - 1) % h_size
+				h_previous = (h_next + h_size - 2) % h_size
+				// raw features
+				x[0] = history[h_recent]
+				x[1] = history[h_recent] - history[h_previous]
+				x[2] = stat.stdDev(history)
+				// reward
+				reward = x[0]
+				// normalize?
+				// update previous arm matrices
+				// A[last_arm] += outer(last_x, last_x)
+				for (int j = 0; j < n_features; j++) {
+					for (int l = 0; l < n_features; l++) {
+						A[last_arm][j][l] = A[last_arm][j][l] + last_x[j] * last_x[l]
+					}
+				}
+				// b[last_arm] += reward * last_x
+				for (int j = 0; j < n_features; j++) {
+					b[last_arm][j] = b[last_arm][j] + reward * last_x[j]
+				}
+				// A_inv[last_arm] via Sherman-Morrison
+				for (int j = 0; j < n_features; j++) {
+					u[j] = 0.0
+					for (int l = 0; l < n_features; l++) {
+						u[j] = u[j] + A_inv[last_arm][j][l] * last_x[l]
+					}
+				}
+				denom = 1.0
+				for (int j = 0; j < n_features; j++) {
+					denom = denom + last_x[j] * u[j]
+				}
+				for (int j = 0; j < n_features; j++) {
+					for (int l = 0; l < n_features; l++) {
+						A_inv[last_arm][j][l] = A_inv[last_arm][j][l] - (u[j] * u[l]) / denom
+					}
+				}
+				// score all arms; for each arm
+				best_ucb = 0 - 0x3f3f3f3f
+				for (int arm = 0; arm < k; arm++) {
+					// theta = A_inv[arm] @ b[arm]
+					for (int j = 0; j < n_features; j++) {
+						theta[j] = 0.0
+						for (int l = 0; l < n_features; l++) {
+							theta[j] = theta[j] + A_inv[arm][j][l] * b[arm][l]
+						}
+					}
+				
+					// base = x · theta
+					base = 0.0
+					for (int j = 0; j < n_features; j++) {
+						base = base + x[j] * theta[j]
+					}
+					// u = A_inv[arm] @ x
+					for (int j = 0; j < n_features; j++) {
+						u2[j] = 0.0
+						for (int l = 0; l < n_features; l++) {
+							u2[j] = u2[j] + A_inv[arm][j][l] * x[l]
+						}
+					}
+					// quad = x · u2
+					quad = 0.0
+					for (int j = 0; j < n_features; j++) {
+						quad = quad + x[j] * u2[j]
+					}
+					// unc = alpha * sqrt(quad)
+					unc = alpha * math.sqrt(quad)
+					// ucb = base + unc
+					ucb = base + unc
+	
+					if (ucb > best_ucb) {
+						best_ucb = ucb
+						chosen_arm = arm
+					}
+					// log?
+					out.print("arm = ")
+					toPrint = iu.makeString(arm)
+					out.println(toPrint)
+					out.print("base = ")
+					toPrint = du.makeString(base)
+					out.println(toPrint)
+					out.print("unc = ")
+					toPrint = du.makeString(unc)
+					out.println(toPrint)
+					out.print("ucb = ")
+					toPrint = du.makeString(ucb)
+					out.println(toPrint)
+				}
+				if (best_ucb < 0.0001) {
+					chosen_arm = random.getInt(k)
+					out.print("All UCB's at 0. Choosing random arm: ")
+					toPrint = iu.makeString(chosen_arm)
+					out.println(toPrint)
+				}
+				// register iteration
+				for (int j = 0; j < n_features; j++)
+					last_x[j] = x[j]
+				last_arm = chosen_arm
+				out.print("CHOSEN ARM: ")
+				toPrint = iu.makeString(chosen_arm)
+				out.println(toPrint)
+				out.println("=========================")
+				final_score[chosen_arm] += 1
+			}
+			for (int i = 0; i < k; i++) {
+				out.print("Arm ")
+				toPrint = iu.makeString(i)
+				out.print(toPrint)
+				out.print(": ")
+				toPrint = iu.makeString(final_score[i])
+				out.println(toPrint)
+			}
+		} else if (cmd == WEIRD) {
+			char toPrint[]
+			dec a = 0 - 0x3f3f3f3f
+			toPrint = du.makeString(a)
+			out.println(toPrint)
 		} else {
 			out.println("ERROR!")
 		}
@@ -103,8 +477,9 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 		restAPI.setConfig(configs[index].string) // set_config to index
 		dec hits = 0
 		dec misses = 0
+		int test = 0
 		dec results[] = new dec[](0.0,0.0)
-		timer.sleep(10)
+		timer.sleep(250)
 		pData = restAPI.getPerception()
 		for (int j = 0; j < pData.metrics.arrayLength; j++) {
 			if (pData.metrics[j].name == "hits") {
@@ -113,9 +488,13 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 			if (pData.metrics[j].name == "misses") {
 				misses = pData.metrics[j].totalValue
 			}
+			//if (pData.metrics[j].name == "item") {
+			//	test = pData.metrics[j].totalValue
+			//}
 		}
 		results[0] = hits
 		results[1] = misses
+		//out.println("$(test)")
 		return results
 	}
 
@@ -139,14 +518,11 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
         return updated_value
 	}
 
-    int max(dec values[], int arms) 
-    {
+    int max(dec values[], int arms) {
         dec max_value = values[0]
         int max_index = 0
-        for (int i = 0; i < arms; i++)
-        {
-            if (values[i] > max_value)
-            {
+        for (int i = 0; i < arms; i++) {
+            if (values[i] > max_value) {
                 max_value = values[i]
                 max_index = i
             }
@@ -156,13 +532,20 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 
 	int App:main(AppParam params[]) {
 		restAPI = new RestAPI(DEFAULT_SERVER_IP, DEFAULT_SERVER_PORT)
+		random.setSeed(calendar.getMS())
 		out.println("Sejam bem-vindos ao prompt test!")
 		out.println("Os comandos sao:")
-		out.println("$(GET_PERCEPTION_DATA) \t Para pegar o número de misses e hits gerado pelo componente de cache")
-		out.println("$(GET_CONFIG) \t Para retornar a configuracao atual")
-		out.println("$(GET_CONFIGS) \t Para retornar todas as possiveis configuracoes")
-		out.println("$(SET_CONFIG) 0 \t Para adaptar para a primeira configuracao. \nNote que o 0 e o indice da lista retornada pelo get_all_configs\n")
+		out.println("$(GET_PERCEPTION_DATA) \t Para pegar o número de misses e hits gerado pelo componente de cache.")
+		out.println("$(GET_CONFIG) \t Para retornar a configuracao atual.")
+		out.println("$(GET_CONFIGS) \t Para retornar todas as possiveis configuracoes.")
+		out.println("$(SET_CONFIG) 0 \t Para adaptar para a primeira configuracao. \nNote que o 0 e o indice da lista retornada pelo get_all_configs.\n")
 		out.println("-> Note que voce so conseguira rodar o $(SET_CONFIG) se executar o $(GET_CONFIGS) pelo menos uma vez.")
+		out.println("$(TEST) \t Pega número médio de hits e misses gerado por cada componente.")
+		out.println("$(UCB1) \t Algoritmo de escolha UCB-1.")
+		out.println("$(LINUCB) \t Algoritmo de escolha LinUCB.")
+		out.println("$(GREEDY) \t Algoritmo de escolha greedy simples.")
+		out.println("$(EGREEDY) \t Algoritmo de escolha e-greedy.")
+		out.println("$(WEIRD) \t Teste")
 		char cmd[]
 		while (1) {
 			out.print("cmd> ")

@@ -18,11 +18,13 @@ component provides Cache(Destructor, AdaptEvents) requires io.Output out, data.I
                     }
                     cache[Cache.MAX_SIZE - 1] = foundItem // MRU at the end
                     perception.addMetric("hits", 1, true)
+                    //perception.addMetric("item", key, true, true)
                     return foundItem.value
                 }
             } else { break }
         }
         perception.addMetric("misses", 1, false)
+        //perception.addMetric("item", key, true, true)
         add(new CacheItem(key, key))
         return INT_MAX
     }

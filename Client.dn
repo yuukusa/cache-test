@@ -1,13 +1,16 @@
 const char DEFAULT_TEST[] = "def_test"
 const char FIFO_TEST[] = "fifo_test"
 const char MRU_TEST[] = "mru_test"
+const char MRU_TEST2[] = "mru_test2"
 const char RAN_TEST[] = "ran_test"
 const char LRU_TEST[] = "lru_test"
+const char ZIPFIAN[] = "zipfian"
+const char ALTERNATOR[] = "alt"
 
 const int MAX_SIZE = 10
 component provides App requires io.Output out, io.Input in, net.http.HTTPRequest req,
 	data.IntUtil iu, data.StringUtil strUtil, util.Random random, time.Calendar calendar,
-	time.Timer timer {
+	time.Timer timer, util.Math math {
 
     void printResp(HTTPResponse resp) {
         char txtResp[] = resp.content
@@ -25,16 +28,21 @@ component provides App requires io.Output out, io.Input in, net.http.HTTPRequest
 	}
 
 	void execute(char cmd[], int op) {
+		int default_rounds = 10000
 		if (cmd == DEFAULT_TEST) {
 			default_test()
 		} else if (cmd == RAN_TEST) {
-			ran_test()
+			ran_test(default_rounds)
 		} else if (cmd == MRU_TEST) {
-			mru_test()
+			mru_test(default_rounds)
 		} else if (cmd == LRU_TEST) {
-			lru_test()
-		} else if (cmd == FIFO_TEST) {
-			fifo_test()
+			lru_test(default_rounds)
+		} else if (cmd == MRU_TEST2) {
+			mru2_test(default_rounds)
+		} else if (cmd == ZIPFIAN) {
+			zipfian_test(default_rounds)
+		} else if (cmd == ALTERNATOR) {
+			alternate()
 		} else {
 			out.println("ERROR!")
 		}
@@ -46,38 +54,36 @@ component provides App requires io.Output out, io.Input in, net.http.HTTPRequest
 		}
 		printResp(req.get("http://localhost:8080/?method=GET&item=20", null))
 		printResp(req.get("http://localhost:8080/?method=GET&item=21", null))
-		printResp(req.get("http://localhost:8080/?method=PRINT&item=0", null))
     }
 
-	void ran_test() {
+	void ran_test(int rounds) {
 		int j = MAX_SIZE
-		while(1) {
+		for (int r = 0; r < rounds; r++) {
 			for (int i = 0; i < MAX_SIZE; i++) {
 				printResp(req.get("http://localhost:8080/?method=GET&item=$i", null))
 			}
 			printResp(req.get("http://localhost:8080/?method=GET&item=$j", null))
 			j = j + 1
-			printResp(req.get("http://localhost:8080/?method=PRINT&item=0", null))
+			//printResp(req.get("http://localhost:8080/?method=PRINT&item=0", null))
 			timer.sleep(0.01)
 		}
 	}
 
-	void mru_test() {
+	void mru_test(int rounds) {
 		int j = 1
-		while(1) {
+		for (int r = 0; r < rounds; r++) {
 			printResp(req.get("http://localhost:8080/?method=GET&item=$j", null))
 			printResp(req.get("http://localhost:8080/?method=GET&item=$j", null))
 			j = j % (MAX_SIZE + 1) + 1
-			printResp(req.get("http://localhost:8080/?method=PRINT&item=0", null))
 			timer.sleep(0.01)
 		}
 	}
-	// mudar
-	void lru_test() {
+
+	void lru_test(int rounds) {
 		int HOT_SIZE = 7
 		int FLOOD_SIZE = 3
 		int ohw_counter = 8
-		while(1) {
+		for (int r = 0; r < rounds; r++) {
 			for (int repeat = 0; repeat < 3; repeat++) {
 				for (int i = 1; i <= HOT_SIZE; i++) {
 					printResp(req.get("http://localhost:8080/?method=GET&item=$i", null))
@@ -97,19 +103,124 @@ component provides App requires io.Output out, io.Input in, net.http.HTTPRequest
 			if (ohw_counter > 1000) {
 				ohw_counter = 8
 			}
-			timer.sleep(0.01)
+			//timer.sleep(0.01)
     	}
 	}
 
-	void fifo_test() {
+	void mru2_test(int rounds) {
 		int CACHE_SIZE = 10
 		int WORKING_SET = CACHE_SIZE + 2
-		
-		while(1) {
+	
+		for (int r = 0; r < rounds; r++) {
 			for (int i = 1; i <= WORKING_SET; i++) {
 				printResp(req.get("http://localhost:8080/?method=GET&item=$i", null))
 			}
+			//timer.sleep(0.01)
+		}
+	}
+
+	void fifo_test(int rounds) {
+		int j = MAX_SIZE
+		for (int r = 0; r < rounds; r++) {
+			for (int i = 0; i < MAX_SIZE; i++) {
+				printResp(req.get("http://localhost:8080/?method=GET&item=$i", null))
+				timer.sleep(0.01)
+			}
+			printResp(req.get("http://localhost:8080/?method=GET&item=$j", null))
 			timer.sleep(0.01)
+			j = j + 1
+			printResp(req.get("http://localhost:8080/?method=PRINT&item=0", null))
+			timer.sleep(0.01)
+		}
+	}
+
+	void zipfian_test(int rounds) {
+		// setup
+		int num_items = 100
+		dec s = 1.0
+		dec weights[] = new dec [num_items]
+		dec sum_weights = 0.0	
+		for (int i = 0; i < num_items; i++) { // pre-calculate weights
+			weights[i] = 1.0 / math.power(i + 1, s)
+			sum_weights += weights[i]
+		}
+		for (int i = 0; i < num_items; i++)
+			weights[i] /= sum_weights
+		// pre-fill requests' array, each item in quantity proportional to weight
+		int num_samples = 1000
+		int distribution[] = new int [num_samples]
+		int index = 0
+		int tickets = 0
+		for (int i = 0; i < num_items; i++) {
+			tickets = (weights[i] * num_samples)
+			for (int j = 0; j < tickets; j++) {
+				distribution[index] = i
+				index += 1
+			}
+		}
+
+		distribution = shuffle(distribution, num_samples)
+
+		//print_stats(distribution, num_items, num_samples)
+		//timer.sleep(1000)
+		// main loop: choose index from the array
+		for (int r = 0; r < rounds; r++) {
+			for(int i = 0; i < num_samples; i++) {
+				printResp(req.get("http://localhost:8080/?method=GET&item=$(distribution[i])", null))
+				//printResp(req.get("http://localhost:8080/?method=PRINT&item=0", null))
+			}
+			distribution = shuffle(distribution, num_samples)
+		}
+	}
+
+	int[] shuffle(int sequence[], int length) { // Fisher-Yates shuffle
+		for (int i = length - 1; i > 0; i--) {
+			int j = random.getInt(i + 1)
+			int temp = sequence[i]
+			sequence[i] = sequence[j]
+			sequence[j] = temp
+		}
+		return sequence
+	}
+
+	void alternate() {
+		int sequence
+		while(1) {
+			sequence = random.getInt(5)
+			if (sequence == 0) {
+				out.println("RANDOM")
+				timer.sleep(1000)
+				ran_test(100)
+			} else if (sequence == 1) {
+				out.println("MRU")
+				timer.sleep(1000)
+				mru_test(100)
+			} else if (sequence == 2) {
+				out.println("MRU2")
+				timer.sleep(1000)
+				mru2_test(100)
+			} else if (sequence == 3) {
+				out.println("LRU")
+				timer.sleep(1000)
+				lru_test(100)
+			} else if (sequence == 4) {
+				out.println("ZIPFIAN")
+				timer.sleep(1000)
+				zipfian_test(1)
+			}
+		}
+	}
+
+	void print_stats(int distribution[], int num_items, int length) { // zipfian distribution test
+		int count[] = new int [num_items]
+		for (int i = 0; i < length; i++) {
+			count[distribution[i]] += 1
+		}
+		char toPrint[]
+		for (int i = 0; i < num_items; i++) {
+			toPrint = iu.makeString(count[i])
+			out.print("$(i): ")
+			out.println(toPrint)
 		}
 	}
 
@@ -119,8 +230,11 @@ component provides App requires io.Output out, io.Input in, net.http.HTTPRequest
         out.println("$(DEFAULT_TEST) \t Sequência de teste padrão.")
 		out.println("$(FIFO_TEST)")
 		out.println("$(MRU_TEST)")
+		out.println("$(MRU_TEST2)")
 		out.println("$(LRU_TEST)")
 		out.println("$(RAN_TEST)")
+		out.println("$(ZIPFIAN)")
+		out.println("$(ALTERNATOR) \t Sequência alternada.")
         char cmd[]
 		while (1) {
 			out.print("cmd> ")
