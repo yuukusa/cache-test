@@ -46,12 +46,33 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 			for (int i = 0; i < pData.metrics.arrayLength; i++)
 				out.println("$(pData.metrics[i].name): $(iu.intToString(pData.metrics[i].totalValue))")
 		} else if (cmd == TEST) {
-			out.println("Iniciando modo de teste...")
+			out.println("Teste de cada braço...")
+			int rounds = 10
 			dec results[] = new dec[](0.0,0.0)
+			dec total_arm_hits = 0
+			dec total_arm_misses = 0
+			dec avg_per_arm[] = new dec[configs.arrayLength]
+			char toPrint[]
+
 			for(int i = 0; i < configs.arrayLength; i++) { // go through each config
 				out.println("Modo: $(configs[i].string)")
-				results = collectMetrics(i) // [hits, misses]
-				printResults(results)
+				for (int j = 0; j < rounds; j++) {
+					out.println("---")
+					results = collectMetrics(i) // [hits, misses]
+					printResults(results)
+
+					total_arm_hits += results[0]
+					total_arm_misses += results[1]
+				}
+				out.println("---")
+				avg_per_arm[i] = total_arm_hits / (total_arm_hits + total_arm_misses) 
+				total_arm_hits = 0
+				total_arm_misses = 0
+			}
+			out.println("Resultados:")
+			for (int i = 0; i < configs.arrayLength; i++) {
+				toPrint = du.makeString(avg_per_arm[i])
+				out.println(toPrint)
 			}
 		} else if (cmd == GREEDY) {
 			// setup
@@ -65,7 +86,7 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 			dec averages[] = new dec [k]
 			for (int i = 0; i < k; i++)
 				averages[i] = 0x3f3f3f3f
-			int rounds = 500
+			int rounds = 10
 			dec results[] = new dec [2]
 			int chosen_arm
 			out.println("Iniciando teste greedy...")
@@ -192,7 +213,7 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 			}
 		} else if (cmd == LINUCB) {
 			// setup
-			int rounds = 150//400
+			int rounds = 160//400
 			int n_features = 3
 			int k = configs.arrayLength // number of components
 			int chosen_arm = 0 // default: MRU
@@ -206,8 +227,11 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 			int final_score[] = new int [k]
 			int flag = 0 // 0: pass, 1: block
 			char toPrint[]
+			dec mean_rewards[] = new dec [rounds]
+			dec mean_acc = 0
+			dec mean_acc_rewards[] = new dec [rounds]
 			// hyperparameters
-			dec alpha = 1.5 // optimism knob
+			dec alpha = 1.75 // optimism knob
 			dec d = 1.0 // identity scalar
 			// normalization
 			dec hr_samples[] = new dec [warmup_rounds]
@@ -334,10 +358,13 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 			out.print("Feature x[2]: ")
 			toPrint = du.makeString(x[2])
 			out.println(toPrint)*/
-
 			// main loop
+			out.println("Iniciando loop principal...")
+			toPrint = in.readln()
 			for (int i = 1; i < rounds + 1; i++) {
 				out.println("Round $(i)")
+				if (i == (rounds + 1) / 2)
+					toPrint = in.readln()
 				// drain metrics
 				results = collectMetrics(chosen_arm)
 				if (results[0] + results[1] == 0)
@@ -349,6 +376,9 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 						flag = 0
 				}
 				// update history array + positions
+				mean_rewards[i-1] = results[0] / (results[0] + results[1])
+				mean_acc = mean_acc + mean_rewards[i-1]
+				mean_acc_rewards[i-1] = mean_acc
 				history[h_next] = results[0] / (results[0] + results[1])
 				h_next = (h_next + 1) % h_size
 				h_recent = (h_next + h_size - 1) % h_size
@@ -462,6 +492,14 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 				toPrint = iu.makeString(final_score[i])
 				out.println(toPrint)
 			}
+			out.println("mean,mean_accumulated")
+			for (int i = 0; i < rounds; i++) {
+				toPrint = du.makeString(mean_rewards[i])
+				out.print(toPrint)
+				out.print(",")
+				toPrint = du.makeString(mean_acc_rewards[i])
+				out.println(toPrint)
+			}
 		} else if (cmd == WEIRD) {
 			char toPrint[]
 			dec a = 0 - 0x3f3f3f3f
@@ -479,7 +517,7 @@ component provides App requires pal.control.RestAPI, io.Output out, data.IntUtil
 		dec misses = 0
 		int test = 0
 		dec results[] = new dec[](0.0,0.0)
-		timer.sleep(250)
+		timer.sleep(5000)
 		pData = restAPI.getPerception()
 		for (int j = 0; j < pData.metrics.arrayLength; j++) {
 			if (pData.metrics[j].name == "hits") {

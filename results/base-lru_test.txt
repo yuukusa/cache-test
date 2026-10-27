@@ -1,0 +1,214 @@
+Teste de cada braço...
+Modo: /home/kuro/dana/cache-test/WebMain.o,/home/kuro/dana/cache-test/CacheFIFO.o,/home/kuro/dana/components/net/TCP.o,/home/kuro/dana/cache-test/http/HTTPUtil.o,/home/kuro/dana/components/io/File.o,/home/kuro/dana/components/data/StringUtil.o,/home/kuro/dana/components/data/adt/List.o|0:1:Cache,0:2:net.TCPSocket,0:2:net.TCPServerSocket,0:3:http.HTTPUtil,0:5:data.StringUtil,3:4:io.FileSystem,3:5:data.StringUtil,5:6:data.adt.List
+---
+Hits: 1250
+Misses: 334
+Total: 1584
+Hit Rate: 0.7891414141414141414
+---
+Hits: 1236
+Misses: 331
+Total: 1567
+Hit Rate: 0.7887683471601786853
+---
+Hits: 1289
+Misses: 343
+Total: 1632
+Hit Rate: 0.7898284313725490196
+---
+Hits: 1401
+Misses: 370
+Total: 1771
+Hit Rate: 0.7910784867306606437
+---
+Hits: 1359
+Misses: 364
+Total: 1723
+Hit Rate: 0.7887405687753917585
+---
+Hits: 1289
+Misses: 338
+Total: 1627
+Hit Rate: 0.7922556853103872157
+---
+Hits: 1122
+Misses: 298
+Total: 1420
+Hit Rate: 0.7901408450704225352
+---
+Hits: 1222
+Misses: 325
+Total: 1547
+Hit Rate: 0.7899159663865546218
+---
+Hits: 1279
+Misses: 343
+Total: 1622
+Hit Rate: 0.788532675709001233
+---
+Hits: 1367
+Misses: 358
+Total: 1725
+Hit Rate: 0.7924637681159420289
+---
+Modo: /home/kuro/dana/cache-test/WebMain.o,/home/kuro/dana/cache-test/CacheLRU.o,/home/kuro/dana/components/net/TCP.o,/home/kuro/dana/cache-test/http/HTTPUtil.o,/home/kuro/dana/components/io/File.o,/home/kuro/dana/components/data/StringUtil.o,/home/kuro/dana/components/data/adt/List.o|0:1:Cache,0:2:net.TCPSocket,0:2:net.TCPServerSocket,0:3:http.HTTPUtil,0:5:data.StringUtil,3:4:io.FileSystem,3:5:data.StringUtil,5:6:data.adt.List
+---
+Hits: 1575
+Misses: 172
+Total: 1747
+Hit Rate: 0.9015455065827132226
+---
+Hits: 1566
+Misses: 168
+Total: 1734
+Hit Rate: 0.9031141868512110726
+---
+Hits: 1578
+Misses: 171
+Total: 1749
+Hit Rate: 0.9022298456260720411
+---
+Hits: 1557
+Misses: 165
+Total: 1722
+Hit Rate: 0.904181184668989547
+---
+Hits: 1522
+Misses: 165
+Total: 1687
+Hit Rate: 0.9021932424422050978
+---
+Hits: 1566
+Misses: 168
+Total: 1734
+Hit Rate: 0.9031141868512110726
+---
+Hits: 1591
+Misses: 171
+Total: 1762
+Hit Rate: 0.9029511918274687854
+---
+Hits: 1511
+Misses: 162
+Total: 1673
+Hit Rate: 0.9031679617453676031
+---
+Hits: 1576
+Misses: 168
+Total: 1744
+Hit Rate: 0.9036697247706422018
+---
+Hits: 1592
+Misses: 168
+Total: 1760
+Hit Rate: 0.9045454545454545454
+---
+Modo: /home/kuro/dana/cache-test/WebMain.o,/home/kuro/dana/cache-test/CacheMRU.o,/home/kuro/dana/components/net/TCP.o,/home/kuro/dana/cache-test/http/HTTPUtil.o,/home/kuro/dana/components/io/File.o,/home/kuro/dana/components/data/StringUtil.o,/home/kuro/dana/components/data/adt/List.o|0:1:Cache,0:2:net.TCPSocket,0:2:net.TCPServerSocket,0:3:http.HTTPUtil,0:5:data.StringUtil,3:4:io.FileSystem,3:5:data.StringUtil,5:6:data.adt.List
+---
+Hits: 826
+Misses: 936
+Total: 1762
+Hit Rate: 0.4687854710556186152
+---
+Hits: 798
+Misses: 969
+Total: 1767
+Hit Rate: 0.4516129032258064516
+---
+Hits: 780
+Misses: 945
+Total: 1725
+Hit Rate: 0.4521739130434782608
+---
+Hits: 785
+Misses: 956
+Total: 1741
+Hit Rate: 0.4508902929350947731
+---
+Hits: 791
+Misses: 960
+Total: 1751
+Hit Rate: 0.4517418617932609937
+---
+Hits: 792
+Misses: 947
+Total: 1739
+Hit Rate: 0.4554341575618171362
+---
+Hits: 781
+Misses: 949
+Total: 1730
+Hit Rate: 0.4514450867052023121
+---
+Hits: 768
+Misses: 932
+Total: 1700
+Hit Rate: 0.4517647058823529411
+---
+Hits: 761
+Misses: 925
+Total: 1686
+Hit Rate: 0.4513641755634638196
+---
+Hits: 808
+Misses: 979
+Total: 1787
+Hit Rate: 0.4521544487968662562
+---
+Modo: /home/kuro/dana/cache-test/WebMain.o,/home/kuro/dana/cache-test/CacheRR.o,/home/kuro/dana/components/util/Random.o,/home/kuro/dana/components/time/Calendar.o,/home/kuro/dana/components/net/TCP.o,/home/kuro/dana/cache-test/http/HTTPUtil.o,/home/kuro/dana/components/io/File.o,/home/kuro/dana/components/data/StringUtil.o,/home/kuro/dana/components/data/adt/List.o|0:1:Cache,0:4:net.TCPSocket,0:4:net.TCPServerSocket,0:5:http.HTTPUtil,0:7:data.StringUtil,1:2:util.Random,1:3:time.Calendar,5:6:io.FileSystem,5:7:data.StringUtil,7:8:data.adt.List
+---
+Hits: 1395
+Misses: 403
+Total: 1798
+Hit Rate: 0.7758620689655172413
+---
+Hits: 1358
+Misses: 389
+Total: 1747
+Hit Rate: 0.7773325701202060675
+---
+Hits: 1308
+Misses: 400
+Total: 1708
+Hit Rate: 0.7658079625292740046
+---
+Hits: 1393
+Misses: 367
+Total: 1760
+Hit Rate: 0.7914772727272727272
+---
+Hits: 1370
+Misses: 414
+Total: 1784
+Hit Rate: 0.767937219730941704
+---
+Hits: 1345
+Misses: 415
+Total: 1760
+Hit Rate: 0.7642045454545454545
+---
+Hits: 1369
+Misses: 404
+Total: 1773
+Hit Rate: 0.7721376198533558939
+---
+Hits: 1402
+Misses: 401
+Total: 1803
+Hit Rate: 0.7775929007210205213
+---
+Hits: 1339
+Misses: 417
+Total: 1756
+Hit Rate: 0.7625284738041002277
+---
+Hits: 1323
+Misses: 425
+Total: 1748
+Hit Rate: 0.7568649885583524027
+---
+Resultados:
+0.7901097545936613639
+0.9030730129390018484 LRU
+0.4537612146307798481
+0.7712195951692464704

@@ -1,0 +1,214 @@
+Teste de cada braço...
+Modo: /home/kuro/dana/cache-test/WebMain.o,/home/kuro/dana/cache-test/CacheFIFO.o,/home/kuro/dana/components/net/TCP.o,/home/kuro/dana/cache-test/http/HTTPUtil.o,/home/kuro/dana/components/io/File.o,/home/kuro/dana/components/data/StringUtil.o,/home/kuro/dana/components/data/adt/List.o|0:1:Cache,0:2:net.TCPSocket,0:2:net.TCPServerSocket,0:3:http.HTTPUtil,0:5:data.StringUtil,3:4:io.FileSystem,3:5:data.StringUtil,5:6:data.adt.List
+---
+Hits: 890
+Misses: 891
+Total: 1781
+Hit Rate: 0.4997192588433464345
+---
+Hits: 782
+Misses: 782
+Total: 1564
+Hit Rate: 0.5
+---
+Hits: 846
+Misses: 847
+Total: 1693
+Hit Rate: 0.4997046662728883638
+---
+Hits: 825
+Misses: 826
+Total: 1651
+Hit Rate: 0.499697153240460327
+---
+Hits: 839
+Misses: 840
+Total: 1679
+Hit Rate: 0.4997022036926742108
+---
+Hits: 900
+Misses: 900
+Total: 1800
+Hit Rate: 0.5
+---
+Hits: 865
+Misses: 866
+Total: 1731
+Hit Rate: 0.4997111496244945118
+---
+Hits: 858
+Misses: 859
+Total: 1717
+Hit Rate: 0.4997087944088526499
+---
+Hits: 861
+Misses: 861
+Total: 1722
+Hit Rate: 0.5
+---
+Hits: 882
+Misses: 883
+Total: 1765
+Hit Rate: 0.49971671388101983
+---
+Modo: /home/kuro/dana/cache-test/WebMain.o,/home/kuro/dana/cache-test/CacheLRU.o,/home/kuro/dana/components/net/TCP.o,/home/kuro/dana/cache-test/http/HTTPUtil.o,/home/kuro/dana/components/io/File.o,/home/kuro/dana/components/data/StringUtil.o,/home/kuro/dana/components/data/adt/List.o|0:1:Cache,0:2:net.TCPSocket,0:2:net.TCPServerSocket,0:3:http.HTTPUtil,0:5:data.StringUtil,3:4:io.FileSystem,3:5:data.StringUtil,5:6:data.adt.List
+---
+Hits: 824
+Misses: 820
+Total: 1644
+Hit Rate: 0.5012165450121654501
+---
+Hits: 824
+Misses: 824
+Total: 1648
+Hit Rate: 0.5
+---
+Hits: 816
+Misses: 816
+Total: 1632
+Hit Rate: 0.5
+---
+Hits: 801
+Misses: 801
+Total: 1602
+Hit Rate: 0.5
+---
+Hits: 832
+Misses: 832
+Total: 1664
+Hit Rate: 0.5
+---
+Hits: 846
+Misses: 845
+Total: 1691
+Hit Rate: 0.5002956830277942046
+---
+Hits: 779
+Misses: 779
+Total: 1558
+Hit Rate: 0.5
+---
+Hits: 813
+Misses: 812
+Total: 1625
+Hit Rate: 0.5003076923076923076
+---
+Hits: 855
+Misses: 855
+Total: 1710
+Hit Rate: 0.5
+---
+Hits: 892
+Misses: 892
+Total: 1784
+Hit Rate: 0.5
+---
+Modo: /home/kuro/dana/cache-test/WebMain.o,/home/kuro/dana/cache-test/CacheMRU.o,/home/kuro/dana/components/net/TCP.o,/home/kuro/dana/cache-test/http/HTTPUtil.o,/home/kuro/dana/components/io/File.o,/home/kuro/dana/components/data/StringUtil.o,/home/kuro/dana/components/data/adt/List.o|0:1:Cache,0:2:net.TCPSocket,0:2:net.TCPServerSocket,0:3:http.HTTPUtil,0:5:data.StringUtil,3:4:io.FileSystem,3:5:data.StringUtil,5:6:data.adt.List
+---
+Hits: 1635
+Misses: 87
+Total: 1722
+Hit Rate: 0.9494773519163763066
+---
+Hits: 1610
+Misses: 84
+Total: 1694
+Hit Rate: 0.9504132231404958677
+---
+Hits: 1543
+Misses: 81
+Total: 1624
+Hit Rate: 0.9501231527093596059
+---
+Hits: 1653
+Misses: 87
+Total: 1740
+Hit Rate: 0.95
+---
+Hits: 1501
+Misses: 79
+Total: 1580
+Hit Rate: 0.95
+---
+Hits: 1603
+Misses: 85
+Total: 1688
+Hit Rate: 0.9496445497630331753
+---
+Hits: 1637
+Misses: 86
+Total: 1723
+Hit Rate: 0.9500870574579222286
+---
+Hits: 1569
+Misses: 83
+Total: 1652
+Hit Rate: 0.9497578692493946731
+---
+Hits: 1568
+Misses: 83
+Total: 1651
+Hit Rate: 0.9497274379164142943
+---
+Hits: 1616
+Misses: 85
+Total: 1701
+Hit Rate: 0.9500293944738389182
+---
+Modo: /home/kuro/dana/cache-test/WebMain.o,/home/kuro/dana/cache-test/CacheRR.o,/home/kuro/dana/components/util/Random.o,/home/kuro/dana/components/time/Calendar.o,/home/kuro/dana/components/net/TCP.o,/home/kuro/dana/cache-test/http/HTTPUtil.o,/home/kuro/dana/components/io/File.o,/home/kuro/dana/components/data/StringUtil.o,/home/kuro/dana/components/data/adt/List.o|0:1:Cache,0:4:net.TCPSocket,0:4:net.TCPServerSocket,0:5:http.HTTPUtil,0:7:data.StringUtil,1:2:util.Random,1:3:time.Calendar,5:6:io.FileSystem,5:7:data.StringUtil,7:8:data.adt.List
+---
+Hits: 1516
+Misses: 147
+Total: 1663
+Hit Rate: 0.9116055321707757065
+---
+Hits: 1614
+Misses: 166
+Total: 1780
+Hit Rate: 0.9067415730337078651
+---
+Hits: 1649
+Misses: 160
+Total: 1809
+Hit Rate: 0.9115533443891652846
+---
+Hits: 1561
+Misses: 139
+Total: 1700
+Hit Rate: 0.9182352941176470588
+---
+Hits: 1359
+Misses: 140
+Total: 1499
+Hit Rate: 0.9066044029352901934
+---
+Hits: 1432
+Misses: 129
+Total: 1561
+Hit Rate: 0.9173606662395900064
+---
+Hits: 1545
+Misses: 156
+Total: 1701
+Hit Rate: 0.9082892416225749559
+---
+Hits: 1567
+Misses: 140
+Total: 1707
+Hit Rate: 0.9179847685998828353
+---
+Hits: 1615
+Misses: 163
+Total: 1778
+Hit Rate: 0.9083239595050618672
+---
+Hits: 1682
+Misses: 159
+Total: 1841
+Hit Rate: 0.9136338946224877783
+---
+Resultados:
+0.4997953575396129334
+0.5001811813020896243
+0.9499254843517138599 MRU
+0.9120253536005634133

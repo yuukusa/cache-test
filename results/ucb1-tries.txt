@@ -1,0 +1,12 @@
+zipfian, 2000ms window
+Pull counts:
+1
+97
+1
+1
+Accumulated rewards:
+267
+29519 LRU
+137
+261
+
