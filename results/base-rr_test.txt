@@ -1,214 +1,229 @@
-Teste de cada braço...
-Modo: /home/kuro/dana/cache-test/WebMain.o,/home/kuro/dana/cache-test/CacheFIFO.o,/home/kuro/dana/components/net/TCP.o,/home/kuro/dana/cache-test/http/HTTPUtil.o,/home/kuro/dana/components/io/File.o,/home/kuro/dana/components/data/StringUtil.o,/home/kuro/dana/components/data/adt/List.o|0:1:Cache,0:2:net.TCPSocket,0:2:net.TCPServerSocket,0:3:http.HTTPUtil,0:5:data.StringUtil,3:4:io.FileSystem,3:5:data.StringUtil,5:6:data.adt.List
----
-Hits: 777
-Misses: 927
-Total: 1704
-Hit Rate: 0.4559859154929577464
----
-Hits: 745
-Misses: 892
-Total: 1637
-Hit Rate: 0.4551007941356139279
----
-Hits: 775
-Misses: 931
-Total: 1706
-Hit Rate: 0.4542790152403282532
----
-Hits: 774
-Misses: 928
-Total: 1702
-Hit Rate: 0.4547591069330199764
----
-Hits: 780
-Misses: 936
-Total: 1716
-Hit Rate: 0.4545454545454545454
----
-Hits: 782
-Misses: 939
-Total: 1721
-Hit Rate: 0.4543869843114468332
----
-Hits: 806
-Misses: 967
-Total: 1773
-Hit Rate: 0.4545967287084038353
----
-Hits: 778
-Misses: 935
-Total: 1713
-Hit Rate: 0.4541739638061879743
----
-Hits: 813
-Misses: 975
-Total: 1788
-Hit Rate: 0.454697986577181208
----
-Hits: 804
-Misses: 967
-Total: 1771
-Hit Rate: 0.4539808018068887634
----
-Modo: /home/kuro/dana/cache-test/WebMain.o,/home/kuro/dana/cache-test/CacheLRU.o,/home/kuro/dana/components/net/TCP.o,/home/kuro/dana/cache-test/http/HTTPUtil.o,/home/kuro/dana/components/io/File.o,/home/kuro/dana/components/data/StringUtil.o,/home/kuro/dana/components/data/adt/List.o|0:1:Cache,0:2:net.TCPSocket,0:2:net.TCPServerSocket,0:3:http.HTTPUtil,0:5:data.StringUtil,3:4:io.FileSystem,3:5:data.StringUtil,5:6:data.adt.List
----
-Hits: 3
-Misses: 1716
-Total: 1719
-Hit Rate: 0.0017452006980802792
+# FIFO
+Teste de um único componente:
 ---
 Hits: 0
-Misses: 1717
-Total: 1717
+Misses: 370
+Total: 370
 Hit Rate: 0.0
 ---
 Hits: 0
-Misses: 1750
-Total: 1750
+Misses: 330
+Total: 330
 Hit Rate: 0.0
 ---
 Hits: 0
-Misses: 1712
-Total: 1712
+Misses: 353
+Total: 353
 Hit Rate: 0.0
 ---
 Hits: 0
-Misses: 1754
-Total: 1754
+Misses: 367
+Total: 367
 Hit Rate: 0.0
 ---
 Hits: 0
-Misses: 1617
-Total: 1617
+Misses: 348
+Total: 348
 Hit Rate: 0.0
 ---
 Hits: 0
-Misses: 1664
-Total: 1664
+Misses: 354
+Total: 354
 Hit Rate: 0.0
 ---
 Hits: 0
-Misses: 1607
-Total: 1607
+Misses: 366
+Total: 366
 Hit Rate: 0.0
 ---
 Hits: 0
-Misses: 1709
-Total: 1709
+Misses: 346
+Total: 346
 Hit Rate: 0.0
 ---
 Hits: 0
-Misses: 1665
-Total: 1665
-Hit Rate: 0.0
----
-Modo: /home/kuro/dana/cache-test/WebMain.o,/home/kuro/dana/cache-test/CacheMRU.o,/home/kuro/dana/components/net/TCP.o,/home/kuro/dana/cache-test/http/HTTPUtil.o,/home/kuro/dana/components/io/File.o,/home/kuro/dana/components/data/StringUtil.o,/home/kuro/dana/components/data/adt/List.o|0:1:Cache,0:2:net.TCPSocket,0:2:net.TCPServerSocket,0:3:http.HTTPUtil,0:5:data.StringUtil,3:4:io.FileSystem,3:5:data.StringUtil,5:6:data.adt.List
----
-Hits: 42
-Misses: 1632
-Total: 1674
-Hit Rate: 0.025089605734767025
----
-Hits: 0
-Misses: 1701
-Total: 1701
+Misses: 368
+Total: 368
 Hit Rate: 0.0
 ---
 Hits: 0
-Misses: 1710
-Total: 1710
+Misses: 362
+Total: 362
 Hit Rate: 0.0
----
-Hits: 0
-Misses: 1759
-Total: 1759
-Hit Rate: 0.0
----
-Hits: 0
-Misses: 1720
-Total: 1720
-Hit Rate: 0.0
----
-Hits: 0
-Misses: 1677
-Total: 1677
-Hit Rate: 0.0
----
-Hits: 0
-Misses: 1669
-Total: 1669
-Hit Rate: 0.0
----
-Hits: 0
-Misses: 1676
-Total: 1676
-Hit Rate: 0.0
----
-Hits: 0
-Misses: 1824
-Total: 1824
-Hit Rate: 0.0
----
-Hits: 0
-Misses: 1682
-Total: 1682
-Hit Rate: 0.0
----
-Modo: /home/kuro/dana/cache-test/WebMain.o,/home/kuro/dana/cache-test/CacheRR.o,/home/kuro/dana/components/util/Random.o,/home/kuro/dana/components/time/Calendar.o,/home/kuro/dana/components/net/TCP.o,/home/kuro/dana/cache-test/http/HTTPUtil.o,/home/kuro/dana/components/io/File.o,/home/kuro/dana/components/data/StringUtil.o,/home/kuro/dana/components/data/adt/List.o|0:1:Cache,0:4:net.TCPSocket,0:4:net.TCPServerSocket,0:5:http.HTTPUtil,0:7:data.StringUtil,1:2:util.Random,1:3:time.Calendar,5:6:io.FileSystem,5:7:data.StringUtil,7:8:data.adt.List
----
-Hits: 1005
-Misses: 748
-Total: 1753
-Hit Rate: 0.573302909298345693
----
-Hits: 952
-Misses: 717
-Total: 1669
-Hit Rate: 0.5704014379868184541
----
-Hits: 1017
-Misses: 691
-Total: 1708
-Hit Rate: 0.595433255269320843
----
-Hits: 1040
-Misses: 735
-Total: 1775
-Hit Rate: 0.5859154929577464788
----
-Hits: 1023
-Misses: 771
-Total: 1794
-Hit Rate: 0.5702341137123745819
----
-Hits: 940
-Misses: 753
-Total: 1693
-Hit Rate: 0.5552274069698759598
----
-Hits: 1018
-Misses: 812
-Total: 1830
-Hit Rate: 0.5562841530054644808
----
-Hits: 973
-Misses: 787
-Total: 1760
-Hit Rate: 0.5528409090909090909
----
-Hits: 932
-Misses: 713
-Total: 1645
-Hit Rate: 0.5665653495440729483
----
-Hits: 992
-Misses: 733
-Total: 1725
-Hit Rate: 0.575072463768115942
 ---
 Resultados:
-0.4546456967094190702
-0.000177367860943597
-0.0024572899602153054
-0.570078377132319041 RR
+0.0
+
+# LRU
+Teste de um único componente:
+---
+Hits: 0
+Misses: 361
+Total: 361
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 316
+Total: 316
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 298
+Total: 298
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 344
+Total: 344
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 345
+Total: 345
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 315
+Total: 315
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 321
+Total: 321
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 317
+Total: 317
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 326
+Total: 326
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 321
+Total: 321
+Hit Rate: 0.0
+---
+Resultados:
+0.0
+
+# MRU
+Teste de um único componente:
+---
+Hits: 0
+Misses: 312
+Total: 312
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 311
+Total: 311
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 355
+Total: 355
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 346
+Total: 346
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 327
+Total: 327
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 339
+Total: 339
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 355
+Total: 355
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 348
+Total: 348
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 355
+Total: 355
+Hit Rate: 0.0
+---
+Hits: 0
+Misses: 354
+Total: 354
+Hit Rate: 0.0
+---
+Resultados:
+0.0
+
+# RANDOM
+Teste de um único componente:
+---
+Hits: 197
+Misses: 141
+Total: 338
+Hit Rate: 0.5828402366863905325
+---
+Hits: 182
+Misses: 160
+Total: 342
+Hit Rate: 0.5321637426900584795
+---
+Hits: 205
+Misses: 140
+Total: 345
+Hit Rate: 0.5942028985507246376
+---
+Hits: 220
+Misses: 143
+Total: 363
+Hit Rate: 0.6060606060606060606
+---
+Hits: 197
+Misses: 161
+Total: 358
+Hit Rate: 0.5502793296089385474
+---
+Hits: 201
+Misses: 140
+Total: 341
+Hit Rate: 0.5894428152492668621
+---
+Hits: 217
+Misses: 135
+Total: 352
+Hit Rate: 0.6164772727272727272
+---
+Hits: 190
+Misses: 174
+Total: 364
+Hit Rate: 0.521978021978021978
+---
+Hits: 209
+Misses: 147
+Total: 356
+Hit Rate: 0.5870786516853932584
+---
+Hits: 191
+Misses: 149
+Total: 340
+Hit Rate: 0.5617647058823529411
+---
+Resultados:
+0.5741640468705344384
+
+# FINAL
+fifo 0.0
+lru 0.0
+mru 0.0
+rr 0.5741640468705344384

@@ -12,4 +12,5 @@ interface Cache {
     //bool update(store CacheItem item)
     void add(store CacheItem item)
     void printCache()
+    void clearCache()
 }

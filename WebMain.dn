@@ -39,6 +39,9 @@ component provides App requires Cache c, io.Output out, data.IntUtil iu, net.TCP
         } else if(method[1].string == "PRINT") {
             c.printCache()
             return "PRINTED"
+        } else if (method[1].string == "CLEAR") {
+            c.clearCache()
+            return "CLEARED"
         }
         return "ERROR"
     }
